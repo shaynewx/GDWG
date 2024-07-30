@@ -6,3 +6,5 @@ Testing/
 .vs/
 .DS_Store
 CMakeFiles
+cmake-build-debug/
+.idea/
