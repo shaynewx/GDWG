@@ -10,15 +10,15 @@
 //       straight away
 namespace gdwg {
 	template<typename N, typename E> // 声明template
-	// 基类
+	// Edge: An Abstract BASE Class
 	class edge {
 	 public:
 		virtual ~edge() = default; // 用于保证派生类对象可以通过基类指针安全销毁
 		virtual std::string print_edge() const = 0; // 用于返回边的字符串表述（ ）
 		virtual bool is_weighted() const = 0; // 返回边是否为加权边
-		virtual std::optional<E> get_weight() const = 0; // 返回权重（无权边返回std::nullopt）
+		virtual std::optional<E>& get_weight() const = 0; // 返回权重（无权边返回std::nullopt）
 		virtual std::pair<N, N> get_nodes() const = 0; // 返回边的源节点和目标节点
-		virtual bool operator==(const edge& other) const = 0; // 比较两条边是否相等
+		virtual bool operator==(const edge& other) const = 0;
 
 	 private:
 		// You may need to add data members and member functions
@@ -29,6 +29,7 @@ namespace gdwg {
 	template<typename N, typename E>
 	class weighted_edge : public edge<N, E> {
 	 public:
+		// 加权边的构造函数
 		weighted_edge(const N& src, const N& dst, const E& weight)
 		: src_(src)
 		, dst_(dst)
@@ -46,7 +47,7 @@ namespace gdwg {
 		}
 
 		// 返回权重
-		std::optional<E> get_weight() const override {
+		std::optional<E>& get_weight() const override {
 			return weight_;
 		}
 
@@ -56,6 +57,14 @@ namespace gdwg {
 		}
 
 		// 比较两条边是否相等
+		bool operator==(const edge<N, E>& other) const override {
+			auto const* other_edge = dynamic_cast<const weighted_edge<N, E>*>(&other); // 将other转为weighted_edge
+			if (other_edge) {
+				return this->src_ == other_edge->src_ and this->dst_ == other_edge->dst_
+				       and this->weight_ == other_edge->weight_;
+			}
+			return false;
+		}
 
 	 private:
 		N src_;
@@ -67,6 +76,7 @@ namespace gdwg {
 	template<typename N, typename E>
 	class unweighted_edge : public edge<N, E> {
 	 public:
+		// 无权边的构造函数
 		unweighted_edge(const N& src, const N& dst)
 		: src_(src)
 		, dst_(dst) {}
@@ -74,10 +84,10 @@ namespace gdwg {
 		// 实现纯虚函数
 		// 返回边的字符串表述
 		std::string print_edge() const override {
-			return std::to_string(src_) + " -> " + std::to_string(dst_) + " | U ";
+			return std::to_string(src_) + " -> " + std::to_string(dst_) + " | U";
 		}
 
-		// 返回边是否为加权边（是）
+		// 返回边是否为加权边（否）
 		bool is_weighted() const override {
 			return false;
 		}
@@ -90,6 +100,15 @@ namespace gdwg {
 		// 返回边的源节点和目标节点
 		std::pair<N, N> get_nodes() const override {
 			return {src_, dst_};
+		}
+
+		// 比较两个边是否相等
+		bool operator==(const edge<N, E>& other) const override {
+			auto const* other_edge = dynamic_cast<const unweighted_edge<N, E>*>(&other); // 将other转为unweighted_edge
+			if (other_edge) {
+				return this->src_ == other_edge->src_ and this->dst_ == other_edge->dst_;
+			}
+			return false;
 		}
 
 	 private:
