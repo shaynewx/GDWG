@@ -1,7 +1,9 @@
 #ifndef GDWG_GRAPH_H
 #define GDWG_GRAPH_H
 
+#include <iomanip>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -16,7 +18,7 @@ namespace gdwg {
 		virtual ~edge() = default; // 用于保证派生类对象可以通过基类指针安全销毁
 		virtual std::string print_edge() const = 0; // 用于返回边的字符串表述（ ）
 		virtual bool is_weighted() const = 0; // 返回边是否为加权边
-		virtual std::optional<E>& get_weight() const = 0; // 返回权重（无权边返回std::nullopt）
+		virtual std::optional<E> get_weight() const = 0; // 返回权重（无权边返回std::nullopt）
 		virtual std::pair<N, N> get_nodes() const = 0; // 返回边的源节点和目标节点
 		virtual bool operator==(const edge& other) const = 0;
 
@@ -38,7 +40,9 @@ namespace gdwg {
 		// 实现纯虚函数
 		// 返回边的字符串表述
 		std::string print_edge() const override {
-			return std::to_string(src_) + " -> " + std::to_string(dst_) + " | W | " + std::to_string(weight_);
+			std::ostringstream oss; // 定义输出字符流
+			oss << src_ << " -> " << dst_ << " | W | " << std::fixed << std::setprecision(1) << weight_;
+			return oss.str();
 		}
 
 		// 返回边是否为加权边（是）
@@ -47,7 +51,7 @@ namespace gdwg {
 		}
 
 		// 返回权重
-		std::optional<E>& get_weight() const override {
+		std::optional<E> get_weight() const override {
 			return weight_;
 		}
 
@@ -56,7 +60,7 @@ namespace gdwg {
 			return {src_, dst_};
 		}
 
-		// 比较两条边是否相等
+		// 比较两条边是否相等 operator==重载
 		bool operator==(const edge<N, E>& other) const override {
 			auto const* other_edge = dynamic_cast<const weighted_edge<N, E>*>(&other); // 将other转为weighted_edge
 			if (other_edge) {
@@ -64,6 +68,11 @@ namespace gdwg {
 				       and this->weight_ == other_edge->weight_;
 			}
 			return false;
+		}
+
+		// operator!=重载
+		bool operator!=(const edge<N, E>& other) const {
+			return *this != other;
 		}
 
 	 private:
@@ -109,6 +118,11 @@ namespace gdwg {
 				return this->src_ == other_edge->src_ and this->dst_ == other_edge->dst_;
 			}
 			return false;
+		}
+
+		// operator!=重载
+		bool operator!=(const edge<N, E>& other) const {
+			return *this != other;
 		}
 
 	 private:
