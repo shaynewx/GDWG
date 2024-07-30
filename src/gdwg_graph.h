@@ -1,18 +1,25 @@
 #ifndef GDWG_GRAPH_H
 #define GDWG_GRAPH_H
 
+#include <initializer_list>
+#include <unordered_map>
+#include <unordered_set>
 #include <iomanip>
 #include <optional>
 #include <sstream>
 #include <string>
 #include <utility>
+#include <vector>
 
 // TODO: Make both graph and edge generic
 //       ... this won't just compile
 //       straight away
 namespace gdwg {
-	template<typename N, typename E> // 声明template
+	template<typename N, typename E>
+	class graph; // 前向声明
+
 	// Edge: An Abstract BASE Class
+	template<typename N, typename E>
 	class edge {
 	 public:
 		virtual ~edge() = default; // 用于保证派生类对象可以通过基类指针安全销毁
@@ -23,7 +30,7 @@ namespace gdwg {
 		virtual bool operator==(const edge& other) const = 0;
 
 	 private:
-		friend class graph;
+		friend class graph<N, E>; // 声明模板友元
 	};
 
 	// 加权Edge
@@ -131,10 +138,50 @@ namespace gdwg {
 		N dst_;
 	};
 
+	// 图
+	template<typename N, typename E>
 	class graph {
 	 public:
-		// Your member functions go here
+		// 默认构造函数，noexcept防止异常抛出
+		graph() noexcept
+		: adj_list_{}
+		, nodes_{} {}
+
+		// 初始化列表构造函数，接受一个初始化列表作为参数
+		graph(std::initializer_list<N> il) {
+			// 清空当前对象的状态
+			adj_list_.clear();
+			nodes_.clear();
+
+			// 插入初始化列表中的元素
+			for (const auto& node : il) {
+				nodes_.emplace(node);
+			}
+		}
+
+		// 范围构造函数
+		template<typename InputIt>
+		graph(InputIt first, InputIt last) {
+			for (auto it = first; it != last; ++it) {
+				nodes_.emplace(*it);
+			}
+		}
+
+		// 移动构造函数
+		graph(graph&& other) noexcept = default;
+
+		// 移动赋值运算符
+		auto operator=(graph&& other) noexcept -> graph& = default;
+
+		// 复制构造函数
+		graph(graph const& other) = default;
+
+		// 复制赋值运算符
+		auto operator=(graph const& other) -> graph& = default;
+
 	 private:
+		std::unordered_map<N, std::vector<std::pair<N, E>>> adj_list_; // 节点和边的邻接表
+		std::unordered_set<N> nodes_; // 节点的集合
 	};
 } // namespace gdwg
 
