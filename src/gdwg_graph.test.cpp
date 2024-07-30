@@ -40,6 +40,7 @@ TEST_CASE("Weighted Edge Test Cases", "[weighted_edge]") {
 		gdwg::weighted_edge<int, double> edge3(1, 3, 3.5);
 		REQUIRE(edge1 == edge2);
 		REQUIRE_FALSE(edge1 == edge3);
+		REQUIRE(edge1 != edge3);
 	}
 }
 
@@ -69,5 +70,6 @@ TEST_CASE("Unweighted Edge Test Cases", "[unweighted_edge]") {
 		gdwg::unweighted_edge<int, double> edge3(2, 1);
 		REQUIRE(edge1 == edge2);
 		REQUIRE_FALSE(edge1 == edge3);
+		REQUIRE(edge1 != edge3);
 	}
 }

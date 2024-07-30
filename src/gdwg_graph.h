@@ -23,7 +23,6 @@ namespace gdwg {
 		virtual bool operator==(const edge& other) const = 0;
 
 	 private:
-		// You may need to add data members and member functions
 		friend class graph;
 	};
 
@@ -72,7 +71,7 @@ namespace gdwg {
 
 		// operator!=重载
 		bool operator!=(const edge<N, E>& other) const {
-			return *this != other;
+			return !(*this == other);
 		}
 
 	 private:
@@ -93,7 +92,9 @@ namespace gdwg {
 		// 实现纯虚函数
 		// 返回边的字符串表述
 		std::string print_edge() const override {
-			return std::to_string(src_) + " -> " + std::to_string(dst_) + " | U";
+			std::ostringstream oss;
+			oss << src_ << " -> " << dst_ << " | U";
+			return oss.str();
 		}
 
 		// 返回边是否为加权边（否）
@@ -122,7 +123,7 @@ namespace gdwg {
 
 		// operator!=重载
 		bool operator!=(const edge<N, E>& other) const {
-			return *this != other;
+			return !(*this == other);
 		}
 
 	 private:
