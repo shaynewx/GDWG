@@ -42,3 +42,32 @@ TEST_CASE("Weighted Edge Test Cases", "[weighted_edge]") {
 		REQUIRE_FALSE(edge1 == edge3);
 	}
 }
+
+TEST_CASE("Unweighted Edge Test Cases", "[unweighted_edge]") {
+	gdwg::unweighted_edge<int, double> edge1(1, 2);
+
+	SECTION("Test Print Edge") {
+		REQUIRE(edge1.print_edge() == "1 -> 2 | U");
+	}
+
+	SECTION("Test Is Weighted") {
+		REQUIRE_FALSE(edge1.is_weighted());
+	}
+
+	SECTION("Test Get Weight") {
+		REQUIRE_FALSE(edge1.get_weight().has_value());
+	}
+
+	SECTION("Test Get Nodes") {
+		auto nodes = edge1.get_nodes();
+		REQUIRE(nodes.first == 1);
+		REQUIRE(nodes.second == 2);
+	}
+
+	SECTION("Test Equality Operator") {
+		gdwg::unweighted_edge<int, double> edge2(1, 2);
+		gdwg::unweighted_edge<int, double> edge3(2, 1);
+		REQUIRE(edge1 == edge2);
+		REQUIRE_FALSE(edge1 == edge3);
+	}
+}
