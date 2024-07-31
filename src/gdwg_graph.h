@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <optional>
+#include <set>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -180,14 +181,15 @@ namespace gdwg {
 		// 复制赋值运算符
 		graph& operator=(graph const& other) = default;
 
-		// 返回图中节点的数量
-		[[nodiscard]] std::size_t node_count() const {
-			return nodes_.size();
-		}
-
+		// 2.5 Accessors
 		// 检查一个特定的节点是否存在于图中
 		[[nodiscard]] bool is_node(const N& node) const {
 			return nodes_.find(node) != nodes_.end();
+		}
+
+		// 检查图中是否有节点（没有则返回true）
+		[[nodiscard]] bool empty() const {
+			return nodes_.empty();
 		}
 
 		// 检查两个节点之间是否有特定权重的边
@@ -207,11 +209,15 @@ namespace gdwg {
 					return true; // 找到匹配的边
 				}
 			}
-
 			return false; // 未找到匹配的边
 		}
 
-		// Modifiers
+		// 返回图中节点的数量
+		[[nodiscard]] std::size_t node_count() const {
+			return nodes_.size();
+		}
+
+		// 2.4 Modifiers
 		// 插入node：插入一个新节点
 		bool insert_node(const N& value) {
 			//  insert 方法返回一个 pair，其中 second 表示是否插入成功
@@ -325,9 +331,15 @@ namespace gdwg {
 			return edges.size() != before;
 		}
 
+		// 删除所有点
+		void clear() noexcept {
+			nodes_.clear();
+			adj_list_.clear();
+		}
+
 	 private:
 		std::unordered_map<N, std::vector<std::pair<N, std::optional<E>>>> adj_list_; // 节点和边的邻接表
-		std::unordered_set<N> nodes_; // 节点的集合
+		std::set<N> nodes_; // 节点的集合
 	};
 } // namespace gdwg
 

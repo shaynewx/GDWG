@@ -235,3 +235,23 @@ TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 		//		REQUIRE(g.erase_edge("NodeA", "NodeC", 100) == false); // 尝试删除不存在的边，应返回 false
 	}
 }
+
+// 检查图中是否没有节点
+TEST_CASE("Graph empty tests", "[graph]") {
+	gdwg::graph<std::string, int> g;
+
+	SECTION("Check empty on a newly created graph") {
+		REQUIRE(g.empty() == true); // 新创建的图应该是空的
+	}
+
+	SECTION("Check not empty after adding nodes") {
+		g.insert_node("Node1");
+		REQUIRE(g.empty() == false); // 添加节点后，图不应该是空的
+	}
+
+	SECTION("Check empty after removing all nodes") {
+		g.insert_node("Node1");
+		g.erase_node("Node1");
+		REQUIRE(g.empty() == true); // 删除所有节点后，图应该是空的
+	}
+}
