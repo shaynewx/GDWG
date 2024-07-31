@@ -330,3 +330,33 @@ TEST_CASE("Test connections method") {
 }
 
 // 图的operator==重载
+TEST_CASE("Graph equality operator tests") {
+	gdwg::graph<int, double> g1;
+	g1.insert_node(1);
+	g1.insert_node(2);
+	g1.insert_edge(1, 2, 1.5);
+
+	gdwg::graph<int, double> g2;
+	g2.insert_node(1);
+	g2.insert_node(2);
+	g2.insert_edge(1, 2, 1.5);
+
+	SECTION("Graphs with identical nodes and edges") {
+		REQUIRE(g1 == g2); // 两个图相同
+	}
+
+	SECTION("Graphs with same nodes but different edges") {
+		g2.insert_edge(2, 1, 0.5);
+		REQUIRE(!(g1 == g2)); // 两个图不相同
+	}
+
+	SECTION("Graphs with different nodes") {
+		g2.insert_node(3);
+		REQUIRE(!(g1 == g2)); // 两个图不相同
+	}
+
+	SECTION("Empty graphs") {
+		gdwg::graph<int, double> empty1, empty2;
+		REQUIRE(empty1 == empty2); // 两个空图相同
+	}
+}
