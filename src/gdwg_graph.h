@@ -269,7 +269,11 @@ namespace gdwg {
 
 			// 去除重复边
 			for (auto& edge : old_edges) {
-				if (std::find(new_edges.begin(), new_edges.end(), edge) == new_edges.end()) {
+				auto it = std::find_if(new_edges.begin(), new_edges.end(), [&edge](const auto& existing_edge) {
+					return existing_edge.first == edge.first && existing_edge.second == edge.second;
+				});
+
+				if (it == new_edges.end()) { // 如果没找到相同的边，才添加
 					new_edges.push_back(std::move(edge));
 				}
 			}
