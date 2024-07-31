@@ -189,6 +189,8 @@ namespace gdwg {
 			return nodes_.find(node) != nodes_.end();
 		}
 
+		// 检查两个节点之间是否有特定权重的边
+
 		// Modifiers
 		// 插入node：插入一个新节点
 		bool insert_node(const N& value) {
@@ -233,6 +235,29 @@ namespace gdwg {
 			nodes_.erase(old_data);
 			nodes_.emplace(new_data);
 			return true;
+		}
+
+		// merge replace node(将旧节点上的边和权重移动到新节点上)
+		void merge_replace_node(N const& old_data, N const& new_data) {
+			// 如果 old_data 或 new_data 不存在于图中，则抛出异常
+			if (nodes_.find(old_data) == nodes_.end() || nodes_.find(new_data) == nodes_.end()) {
+				throw std::runtime_error("Cannot call gdwg::graph<N, E>::merge_replace_node on old or new data if they "
+				                         "don't exist in the graph");
+			}
+
+			auto& old_edges = adj_list_[old_data];
+			auto& new_edges = adj_list_[new_data];
+
+			// 去除重复边
+			for (auto& edge : old_edges) {
+				if (std::find(new_edges.begin(), new_edges.end(), edge) == new_edges.end()) {
+					new_edges.push_back(std::move(edge));
+				}
+			}
+
+			old_edges.clear();
+			nodes_.erase(old_data);
+			adj_list_.erase(old_data);
 		}
 
 	 private:

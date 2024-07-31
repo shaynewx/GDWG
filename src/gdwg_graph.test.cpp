@@ -169,4 +169,28 @@ TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 		REQUIRE_THROWS_AS(g.replace_node("Node4", "Node5"), std::runtime_error); // 替换不存在的节点
 		REQUIRE(g.replace_node("Node2", "Node3") == false); // Node3 已存在，替换应失败
 	}
+
+	// 测试merge_replace_node
+	SECTION("Test merge_replace_node") {
+		g.insert_node("A");
+		g.insert_node("B");
+		g.insert_node("C");
+		g.insert_edge("A", "B", 1);
+		g.insert_edge("A", "C", 2);
+		g.insert_edge("B", "B", 1); // 将成为重复边
+
+		// 正常合并，检查节点和边的迁移
+		REQUIRE_NOTHROW(g.merge_replace_node("A", "B"));
+		REQUIRE(g.contains("A") == false); // A 节点应该被删除
+		REQUIRE(g.contains("B") == true); // B 节点仍然存在
+		REQUIRE(g.node_count() == 2); // 总节点数为2（B, C）
+
+		// 尝试合并不存在的节点
+		REQUIRE_THROWS_AS(g.merge_replace_node("A", "D"), std::runtime_error);
+		REQUIRE_THROWS_AS(g.merge_replace_node("E", "B"), std::runtime_error);
+
+		// is_connected: 检查两个节点间是否有特定权重的边
+		// REQUIRE(g.is_connected("B", "B", 1));
+		// REQUIRE(g.is_connected("B", "C", 2));
+	}
 }
