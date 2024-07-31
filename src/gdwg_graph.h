@@ -47,7 +47,7 @@ namespace gdwg {
 		// 返回边的字符串表述
 		std::string print_edge() const override {
 			std::ostringstream oss; // 定义输出字符流
-			oss << src_ << " -> " << dst_ << " | W | " << std::fixed << std::setprecision(1) << weight_;
+			oss << src_ << " -> " << dst_ << " | W | " << weight_;
 			return oss.str();
 		}
 

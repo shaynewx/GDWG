@@ -19,6 +19,7 @@ TEST_CASE("Weighted Edge Test Cases", "[weighted_edge]") {
 
 	SECTION("Test Print Edge") {
 		REQUIRE(edge1.print_edge() == "1 -> 2 | W | 3.5");
+		REQUIRE(gdwg::weighted_edge<int, double>(1, 2, 3.501).print_edge() == "1 -> 2 | W | 3.501"); // 测试精度
 	}
 
 	SECTION("Test Is Weighted") {
@@ -28,6 +29,7 @@ TEST_CASE("Weighted Edge Test Cases", "[weighted_edge]") {
 	SECTION("Test Get Weight") {
 		REQUIRE(edge1.get_weight().has_value());
 		REQUIRE(edge1.get_weight().value() == 3.5);
+		REQUIRE(gdwg::weighted_edge<int, double>(1, 2, -3.5).get_weight().value() == -3.5); // 测试负权重
 	}
 
 	SECTION("Test Get Nodes") {
@@ -39,9 +41,15 @@ TEST_CASE("Weighted Edge Test Cases", "[weighted_edge]") {
 	SECTION("Test Equality Operator") {
 		gdwg::weighted_edge<int, double> edge2(1, 2, 3.5);
 		gdwg::weighted_edge<int, double> edge3(1, 3, 3.5);
+		gdwg::weighted_edge<int, double> edge4(1, 2, 3.6); // 不同权重
+		gdwg::weighted_edge<int, double> edge5(2, 1, 3.5); // 反向边
 		REQUIRE(edge1 == edge2);
 		REQUIRE_FALSE(edge1 == edge3);
+		REQUIRE_FALSE(edge1 == edge4); // 确认权重差异导致不等
+		REQUIRE_FALSE(edge1 == edge5); // 确认方向性导致不等
 		REQUIRE(edge1 != edge3);
+		REQUIRE(edge1 != edge4);
+		REQUIRE(edge1 != edge5);
 	}
 }
 
