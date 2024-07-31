@@ -302,3 +302,29 @@ TEST_CASE("Graph edges function tests", "[graph]") {
 		REQUIRE_THROWS_AS(g.edges(2, 3), std::runtime_error);
 	}
 }
+
+// 测试返回所有连接到src的nodes
+TEST_CASE("Test connections method") {
+	gdwg::graph<int, double> g;
+	g.insert_node(1);
+	g.insert_node(2);
+	g.insert_node(3);
+	g.insert_edge(1, 2, 1.5);
+	g.insert_edge(1, 3, 2.5);
+
+	SECTION("Check existing connections") {
+		auto result = g.connections(1);
+		std::vector<int> expected = {2, 3};
+		REQUIRE(result == expected);
+	}
+
+	SECTION("Check for node with no connections") {
+		auto result = g.connections(2);
+		std::vector<int> expected = {};
+		REQUIRE(result == expected);
+	}
+
+	SECTION("Throw exception for non-existing node") {
+		REQUIRE_THROWS_AS(g.connections(4), std::runtime_error);
+	}
+}

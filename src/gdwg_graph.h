@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <algorithm>
 #include <iomanip>
+#include <map>
 #include <memory>
 #include <optional>
 #include <set>
@@ -264,6 +265,27 @@ namespace gdwg {
 			return edges_list;
 		}
 
+		// [[nodiscard]] auto find(N const& src, N const& dst, std::optional<E> weight = std::nullopt) -> iterator;
+
+		// 返回所有连接到src的nodes（从任意outgoing edge找到），按升序排序
+		[[nodiscard]] std::vector<N> connections(N const& src) const {
+			// 如果src不存在抛出错误
+			if (!is_node(src)) {
+				throw std::runtime_error("Cannot call gdwg::graph<N, E>::connections if src doesn't exist in the "
+				                         "graph");
+			}
+
+			auto it = adj_list_.find(src); // 在邻接表 adj_list_ 中查找 src 节点
+			std::set<N> unique_connections; // 存储唯一的目标节点
+			if (it != adj_list_.end()) {
+				for (const auto& edge : it->second) {
+					unique_connections.insert(edge.first); // 每条边的目标节点插入 unique_connections
+				}
+			}
+			// 转换为 std::vector输出
+			return std::vector<N>(unique_connections.begin(), unique_connections.end());
+		}
+
 		// 2.4 Modifiers
 		// 插入node：插入一个新节点
 		bool insert_node(const N& value) {
@@ -385,7 +407,7 @@ namespace gdwg {
 		}
 
 	 private:
-		std::unordered_map<N, std::vector<std::pair<N, std::optional<E>>>> adj_list_; // 节点和边的邻接表
+		std::map<N, std::vector<std::pair<N, std::optional<E>>>> adj_list_; // 节点和边的邻接表
 		std::set<N> nodes_; // 节点的集合
 	};
 } // namespace gdwg
