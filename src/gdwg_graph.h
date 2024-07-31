@@ -179,6 +179,16 @@ namespace gdwg {
 		// 复制赋值运算符
 		auto operator=(graph const& other) -> graph& = default;
 
+		// 返回图中节点的数量
+		[[nodiscard]] std::size_t node_count() const {
+			return nodes_.size();
+		}
+
+		// 检查一个特定的节点是否存在于图中
+		bool contains(const N& node) const {
+			return nodes_.find(node) != nodes_.end();
+		}
+
 	 private:
 		std::unordered_map<N, std::vector<std::pair<N, E>>> adj_list_; // 节点和边的邻接表
 		std::unordered_set<N> nodes_; // 节点的集合

@@ -73,3 +73,41 @@ TEST_CASE("Unweighted Edge Test Cases", "[unweighted_edge]") {
 		REQUIRE(edge1 != edge3);
 	}
 }
+
+TEST_CASE("Graph constructor tests", "[graph]") {
+	using gdwg::graph;
+
+	SECTION("Default constructor") {
+		graph<int, double> g;
+		REQUIRE(g.node_count() == 0);
+	}
+
+	SECTION("Initializer list constructor") {
+		graph<int, double> g{1, 2, 3};
+		REQUIRE(g.node_count() == 3);
+		REQUIRE(g.contains(1));
+		REQUIRE(g.contains(2));
+	}
+
+	SECTION("Range constructor") {
+		std::vector<int> nodes = {4, 5, 6};
+		graph<int, double> g(nodes.begin(), nodes.end());
+		REQUIRE(g.node_count() == 3);
+		REQUIRE(g.contains(4));
+	}
+
+	SECTION("Copy constructor") {
+		graph<int, double> g1{1, 2, 3};
+		graph<int, double> g2 = g1;
+		REQUIRE(g2.node_count() == 3);
+		REQUIRE(g2.contains(1));
+	}
+
+	SECTION("Move constructor") {
+		graph<int, double> g1{1, 2, 3};
+		graph<int, double> g2 = std::move(g1);
+		REQUIRE(g2.node_count() == 3);
+		REQUIRE(g2.contains(1));
+		REQUIRE(g1.node_count() == 0);
+	}
+}
