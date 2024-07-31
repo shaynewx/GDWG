@@ -13,6 +13,7 @@ TEST_CASE("basic test") {
 	CHECK(g.is_node(n));*/
 }
 
+// 有权边测试
 TEST_CASE("Weighted Edge Test Cases", "[weighted_edge]") {
 	gdwg::weighted_edge<int, double> edge1(1, 2, 3.5);
 
@@ -44,6 +45,7 @@ TEST_CASE("Weighted Edge Test Cases", "[weighted_edge]") {
 	}
 }
 
+// 无权边测试
 TEST_CASE("Unweighted Edge Test Cases", "[unweighted_edge]") {
 	gdwg::unweighted_edge<int, double> edge1(1, 2);
 
@@ -74,6 +76,7 @@ TEST_CASE("Unweighted Edge Test Cases", "[unweighted_edge]") {
 	}
 }
 
+// 图的constructors测试
 TEST_CASE("Graph constructor tests", "[graph]") {
 	using gdwg::graph;
 
@@ -109,5 +112,16 @@ TEST_CASE("Graph constructor tests", "[graph]") {
 		REQUIRE(g2.node_count() == 3);
 		REQUIRE(g2.contains(1));
 		REQUIRE(g1.node_count() == 0);
+	}
+}
+
+// 图的成员函数测试
+TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
+	gdwg::graph<std::string, int> g;
+
+	SECTION("Test insert_node with string identifiers") {
+		REQUIRE(g.insert_node("Node1") == true);
+		REQUIRE(g.insert_node("Node1") == false);
+		REQUIRE(g.insert_node("Node2") == true);
 	}
 }

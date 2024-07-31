@@ -154,7 +154,7 @@ namespace gdwg {
 			nodes_.clear();
 
 			// 插入初始化列表中的元素
-			for (const auto& node : il) {
+			for (auto const& node : il) {
 				nodes_.emplace(node);
 			}
 		}
@@ -171,13 +171,13 @@ namespace gdwg {
 		graph(graph&& other) noexcept = default;
 
 		// 移动赋值运算符
-		auto operator=(graph&& other) noexcept -> graph& = default;
+		graph& operator=(graph&& other) noexcept = default;
 
 		// 复制构造函数
 		graph(graph const& other) = default;
 
 		// 复制赋值运算符
-		auto operator=(graph const& other) -> graph& = default;
+		graph& operator=(graph const& other) = default;
 
 		// 返回图中节点的数量
 		[[nodiscard]] std::size_t node_count() const {
@@ -189,8 +189,16 @@ namespace gdwg {
 			return nodes_.find(node) != nodes_.end();
 		}
 
+		// Modifiers
+		// 插入node：插入一个新节点
+		bool insert_node(const N& value) {
+			//  insert 方法返回一个 pair，其中 second 表示是否插入成功
+			auto result = nodes_.insert(value);
+			return result.second; // 如果节点是新插入的，second 为 true
+		}
+
 	 private:
-		std::unordered_map<N, std::vector<std::pair<N, E>>> adj_list_; // 节点和边的邻接表
+		std::unordered_map<N, std::vector<std::pair<N, std::optional<E>>>> adj_list_; // 节点和边的邻接表
 		std::unordered_set<N> nodes_; // 节点的集合
 	};
 } // namespace gdwg
