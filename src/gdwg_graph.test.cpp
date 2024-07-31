@@ -178,19 +178,31 @@ TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 		g.insert_edge("A", "B", 1);
 		g.insert_edge("A", "C", 2);
 		g.insert_edge("B", "B", 1); // 将成为重复边
+		g.insert_edge("A", "B"); // 无权边
+		g.insert_edge("A", "B", 5); // 加权边
+
+		// 检查边是否正确存在
+		REQUIRE(g.is_connected("A", "B", 5) == true);
+		REQUIRE(g.is_connected("A", "B", std::nullopt) == true);
+		REQUIRE(g.is_connected("A", "B", 10) == false);
 
 		// 正常合并，检查节点和边的迁移
 		REQUIRE_NOTHROW(g.merge_replace_node("A", "B"));
-		REQUIRE(g.contains("A") == false); // A 节点应该被删除
-		REQUIRE(g.contains("B") == true); // B 节点仍然存在
+		REQUIRE(g.contains("A") == false); // A节点应该被删除
+		REQUIRE(g.contains("B") == true); // B节点仍然存在
 		REQUIRE(g.node_count() == 2); // 总节点数为2（B, C）
+
+		// 检查B节点的边是否正确迁移
+		REQUIRE(g.is_connected("B", "B", 1) == true);
+		REQUIRE(g.is_connected("B", "C", 2) == true);
+		REQUIRE(g.is_connected("B", "B", std::nullopt) == true);
+		REQUIRE(g.is_connected("B", "B", 5) == true);
+
+		// 未迁移之前的边应该不存在
+		REQUIRE(g.is_connected("A", "B", 1) == false);
 
 		// 尝试合并不存在的节点
 		REQUIRE_THROWS_AS(g.merge_replace_node("A", "D"), std::runtime_error);
 		REQUIRE_THROWS_AS(g.merge_replace_node("E", "B"), std::runtime_error);
-
-		// is_connected: 检查两个节点间是否有特定权重的边
-		// REQUIRE(g.is_connected("B", "B", 1));
-		// REQUIRE(g.is_connected("B", "C", 2));
 	}
 }

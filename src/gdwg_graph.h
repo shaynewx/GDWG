@@ -190,6 +190,25 @@ namespace gdwg {
 		}
 
 		// 检查两个节点之间是否有特定权重的边
+		bool is_connected(const N& src, const N& dst, const std::optional<E>& weight) const {
+			// 首先检查源节点是否存在于邻接列表中
+			auto it = adj_list_.find(src);
+			if (it == adj_list_.end()) {
+				return false; // 源节点不存在返回false
+			}
+
+			// 获取源节点的边列表
+			const auto& edges = it->second;
+
+			// 检查是否存在到目标节点的特定权重的边
+			for (const auto& edge : edges) {
+				if (edge.first == dst && edge.second == weight) {
+					return true; // 找到匹配的边
+				}
+			}
+
+			return false; // 未找到匹配的边
+		}
 
 		// Modifiers
 		// 插入node：插入一个新节点
