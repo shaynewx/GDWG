@@ -162,6 +162,12 @@ TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 		g.insert_node("Node1");
 		g.insert_node("Node2");
 
+		g.insert_edge("Node1", "Node2", 10);
+
+		// 期待抛出异常，因为 "Node3" 不存在
+		REQUIRE_THROWS_AS(g.is_connected("Node1", "Node3", 10), std::runtime_error);
+		REQUIRE_THROWS_AS(g.is_connected("Node3", "Node2", 10), std::runtime_error);
+
 		// 成功替换节点
 		REQUIRE(g.replace_node("Node1", "Node3") == true); // 替换存在的节点到新节点
 		REQUIRE(g.insert_node("Node1") == true); // 替换后原节点名应可重新插入
@@ -198,9 +204,6 @@ TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 		REQUIRE(g.is_connected("B", "B", std::nullopt) == true);
 		REQUIRE(g.is_connected("B", "B", 5) == true);
 
-		// 未迁移之前的边应该不存在
-		REQUIRE(g.is_connected("A", "B", 1) == false);
-
 		// 尝试合并不存在的节点
 		REQUIRE_THROWS_AS(g.merge_replace_node("A", "D"), std::runtime_error);
 		REQUIRE_THROWS_AS(g.merge_replace_node("E", "B"), std::runtime_error);
@@ -214,7 +217,6 @@ TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 
 		REQUIRE(g.erase_node("NodeX") == true); // 删除存在的节点
 		REQUIRE(g.is_node("NodeX") == false); // 确认节点已删除
-		REQUIRE(g.is_connected("NodeX", "NodeY", 100) == false); // 确认相关边也被删除
 
 		REQUIRE(g.erase_node("NodeZ") == false); // 尝试删除不存在的节点，应返回 false
 	}
