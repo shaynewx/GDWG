@@ -281,3 +281,24 @@ TEST_CASE("Graph nodes tests", "[graph]") {
 }
 
 // 测试返回src到dst所有边
+TEST_CASE("Graph edges function tests", "[graph]") {
+	gdwg::graph<int, double> g;
+	g.insert_node(1);
+	g.insert_node(2);
+	g.insert_edge(1, 2, 10.0); // Weighted edge
+	g.insert_edge(1, 2); // Unweighted edge
+	g.insert_edge(1, 2, 5.0); // Another weighted edge
+
+	SECTION("Check sorted edges from src to dst") {
+		auto edges = g.edges(1, 2);
+		REQUIRE(edges.size() == 3);
+		REQUIRE_FALSE(edges[0]->is_weighted()); // First should be unweighted
+		REQUIRE(edges[1]->is_weighted());
+		REQUIRE(edges[1]->get_weight() == 5.0); // Next should be the lighter weighted edge
+		REQUIRE(edges[2]->get_weight() == 10.0); // Heaviest weight last
+	}
+
+	SECTION("Throws when nodes do not exist") {
+		REQUIRE_THROWS_AS(g.edges(2, 3), std::runtime_error);
+	}
+}

@@ -6,9 +6,11 @@
 #include <unordered_set>
 #include <algorithm>
 #include <iomanip>
+#include <memory>
 #include <optional>
 #include <set>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -233,6 +235,8 @@ namespace gdwg {
 			// 获取 edges
 			std::vector<std::unique_ptr<edge<N, E>>> edges_list;
 			const auto& adj_edges = adj_list_[src];
+
+			// 遍历 adj_edges 中的每一条边 e,根据是否有权重分别操作
 			for (const auto& e : adj_edges) {
 				if (e.first == dst) {
 					if (e.second) {
@@ -244,15 +248,15 @@ namespace gdwg {
 				}
 			}
 
-			// 排序 Sort edges by weight, keeping unweighted edge at the beginning
+			// 根据有无权重 或 权重大小排序
 			std::sort(edges_list.begin(),
 			          edges_list.end(),
 			          [](const std::unique_ptr<edge<N, E>>& a, const std::unique_ptr<edge<N, E>>& b) {
-				          if (!a->is_weighted() && b->is_weighted())
+				          if (!a->is_weighted() and b->is_weighted())
 					          return true;
-				          if (a->is_weighted() && !b->is_weighted())
+				          if (a->is_weighted() and !b->is_weighted())
 					          return false;
-				          if (a->is_weighted() && b->is_weighted())
+				          if (a->is_weighted() and b->is_weighted())
 					          return a->get_weight() < b->get_weight();
 				          return false;
 			          });
