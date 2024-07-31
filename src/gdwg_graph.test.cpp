@@ -257,3 +257,25 @@ TEST_CASE("Graph empty tests", "[graph]") {
 		REQUIRE(g.empty() == true); // 删除所有节点后，图应该是空的
 	}
 }
+
+// 检查返回所有nodes的vector
+TEST_CASE("Graph nodes tests", "[graph]") {
+	gdwg::graph<std::string, int> g;
+
+	SECTION("Test nodes on an empty graph") {
+		auto nodes = g.nodes();
+		REQUIRE(nodes.empty() == true); // 对空图调用 nodes() 应该返回空向量
+	}
+
+	SECTION("Test nodes returns all nodes in ascending order") {
+		g.insert_node("Charlie");
+		g.insert_node("Alice");
+		g.insert_node("Bob");
+
+		auto nodes = g.nodes();
+		REQUIRE(nodes.size() == 3);
+		REQUIRE(nodes[0] == "Alice");
+		REQUIRE(nodes[1] == "Bob");
+		REQUIRE(nodes[2] == "Charlie");
+	}
+}

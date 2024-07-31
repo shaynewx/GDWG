@@ -200,22 +200,14 @@ namespace gdwg {
 				                         "in the graph");
 			}
 
-			// 检查源节点是否存在于邻接列表中
-			auto it = adj_list_.find(src);
-			if (it == adj_list_.end()) {
-				return false; // 源节点不存在返回false（虽然按异常逻辑这里不会达到）
-			}
-
 			// 获取源节点的边列表
-			const auto& edges = it->second;
-
+			const auto& edges = adj_list_.find(src)->second;
 			// 检查是否存在到目标节点的特定权重的边
 			for (const auto& edge : edges) {
-				if (edge.first == dst && edge.second == weight) {
+				if (edge.first == dst and edge.second == weight) {
 					return true; // 找到匹配的边
 				}
 			}
-
 			return false; // 未找到匹配的边
 		}
 
@@ -223,6 +215,14 @@ namespace gdwg {
 		[[nodiscard]] std::size_t node_count() const {
 			return nodes_.size();
 		}
+
+		// 按ascending order返回所有nodes
+		[[nodiscard]] std::vector<N> nodes() {
+			std::vector<N> result(nodes_.begin(), nodes_.end()); // 直接从 set 复制元素到 vector，元素已经是有序的
+			return result; // 返回包含所有节点的向量
+		}
+
+		// 返回从src到dst的所有边
 
 		// 2.4 Modifiers
 		// 插入node：插入一个新节点
