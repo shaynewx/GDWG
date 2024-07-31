@@ -241,7 +241,7 @@ namespace gdwg {
 			return true;
 		}
 
-		// 替换节点 node
+		// 替换节点 node（用 new_data 替换图中存储的 old_data）
 		bool replace_node(N const& old_data, N const& new_data) {
 			// 如果存在值为 new_data 的节点，则返回 false
 			if (nodes_.find(new_data) != nodes_.end())
@@ -251,13 +251,13 @@ namespace gdwg {
 				throw std::runtime_error("Cannot call gdwg::graph<N, E>::replace_node on a node that doesn't exist");
 			}
 
-			// 替换节点并返回true
+			// 替换节点：先删除旧节点，再插入新节点并返回true
 			nodes_.erase(old_data);
 			nodes_.emplace(new_data);
 			return true;
 		}
 
-		// merge replace node(将旧节点上的边和权重移动到新节点上)
+		// merge replace node(将旧节点上的边和权重迁移到新节点上)
 		void merge_replace_node(N const& old_data, N const& new_data) {
 			// 如果 old_data 或 new_data 不存在于图中，则抛出异常
 			if (nodes_.find(old_data) == nodes_.end() || nodes_.find(new_data) == nodes_.end()) {
@@ -282,6 +282,30 @@ namespace gdwg {
 			old_edges.clear();
 			nodes_.erase(old_data);
 			adj_list_.erase(old_data);
+		}
+
+		// 删除所有值为value的节点
+		bool erase_node(N const& value) {
+			// 找不到该点则返回false
+			auto it = nodes_.find(value);
+			if (it == nodes_.end()) {
+				return false;
+			}
+
+			// 从邻接列表中删除与该节点相关的所有边
+			adj_list_.erase(value);
+
+			// 遍历图中所有节点的邻接列表
+			for (auto& pair : adj_list_) {
+				// 访问当前节点的边列表，并删除所有目标节点为 value 的边
+				auto& edges = pair.second;
+				edges.erase(
+				    std::remove_if(edges.begin(), edges.end(), [value](const auto& edge) { return edge.first == value; }),
+				    edges.end());
+			}
+			// 删除节点
+			nodes_.erase(it);
+			return true;
 		}
 
 	 private:

@@ -205,4 +205,17 @@ TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 		REQUIRE_THROWS_AS(g.merge_replace_node("A", "D"), std::runtime_error);
 		REQUIRE_THROWS_AS(g.merge_replace_node("E", "B"), std::runtime_error);
 	}
+
+	// 测试删除节点
+	SECTION("Test erase_node") {
+		g.insert_node("NodeX");
+		g.insert_node("NodeY");
+		g.insert_edge("NodeX", "NodeY", 100);
+
+		REQUIRE(g.erase_node("NodeX") == true); // 删除存在的节点
+		REQUIRE(g.contains("NodeX") == false); // 确认节点已删除
+		REQUIRE(g.is_connected("NodeX", "NodeY", 100) == false); // 确认相关边也被删除
+
+		REQUIRE(g.erase_node("NodeZ") == false); // 尝试删除不存在的节点，应返回 false
+	}
 }
