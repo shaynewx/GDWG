@@ -360,3 +360,35 @@ TEST_CASE("Graph equality operator tests") {
 		REQUIRE(empty1 == empty2); // 两个空图相同
 	}
 }
+
+// 检测是否可以格式化输出一个图的所有节点和边
+TEST_CASE("Graph output format test", "[graph][output]") {
+	using graph = gdwg::graph<int, int>;
+	auto const v = std::vector<std::tuple<int, int, std::optional<int>>>{
+	    {4, 1, -4},
+	    {3, 2, 2},
+	    {2, 4, std::nullopt},
+	    {2, 4, 2},
+	    {2, 1, 1},
+	    {4, 1, std::nullopt},
+	    {6, 2, 5},
+	    {6, 3, 10},
+	    {1, 5, -1},
+	    {3, 6, -8},
+	    {4, 5, 3},
+	    {5, 2, std::nullopt},
+	};
+
+	auto g = graph{};
+	for (const auto& [from, to, weight] : v) {
+		g.insert_node(from);
+		g.insert_node(to);
+		if (weight.has_value()) {
+			g.insert_edge(from, to, weight.value());
+		}
+		else {
+			g.insert_edge(from, to);
+		}
+	}
+	g.insert_node(64);
+}
