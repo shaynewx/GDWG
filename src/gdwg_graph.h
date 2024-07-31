@@ -9,10 +9,12 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -431,6 +433,44 @@ namespace gdwg {
 					return false; // 如果有节点的边集合不相等则两个图不相等
 			}
 			return true;
+		}
+
+		// 2.8 格式化输出一个图的所有节点和边
+		// 所有节点按照升序排列；每个节点的所有边也需要按顺序输出，首先是无权重的边，然后是有权重的边升序排列
+		friend std::ostream& operator<<(std::ostream& os, const graph<N, E>& g) {
+			os << '\n'; // 在输出任何节点信息之前加入一个换行符
+			std::vector<std::tuple<N, N, std::optional<E>>> edges; // 定义一个向量 edges，用来临时存储和排序所有边的信息
+
+			for (const auto& [node, adj_edges] : g.adj_list_) {
+				os << node << " (\n"; // 输出每个节点的名称和一个开括号，表示开始列出与该节点相关的边
+
+				// 清空 edges 向量，然后将当前节点的所有边添加到这个向量中
+				edges.clear();
+				for (const auto& edge : adj_edges) {
+					edges.emplace_back(node, edge.first, edge.second);
+				}
+
+				// 首先按目标节点排序，如果目标节点相同，无权边排在有权边前面，最后按权重排序
+				std::sort(edges.begin(), edges.end(), [](const auto& lhs, const auto& rhs) {
+					if (std::get<1>(lhs) != std::get<1>(rhs))
+						return std::get<1>(lhs) < std::get<1>(rhs);
+					if (!std::get<2>(lhs).has_value() && std::get<2>(rhs).has_value())
+						return true;
+					if (std::get<2>(lhs).has_value() && !std::get<2>(rhs).has_value())
+						return false;
+					if (std::get<2>(lhs).has_value() && std::get<2>(rhs).has_value())
+						return std::get<2>(lhs).value() < std::get<2>(rhs).value();
+					return false;
+				});
+
+				// 输出所有排序后的边
+				for (const auto& edge : edges) {
+					os << "  " << std::get<0>(edge) << " -> " << std::get<1>(edge) << " | "
+					   << (std::get<2>(edge) ? "W | " + std::to_string(std::get<2>(edge).value()) : "U") << '\n';
+				}
+				os << ")\n";
+			}
+			return os;
 		}
 
 	 private:
