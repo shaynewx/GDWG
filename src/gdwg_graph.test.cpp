@@ -119,12 +119,14 @@ TEST_CASE("Graph constructor tests", "[graph]") {
 TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 	gdwg::graph<std::string, int> g;
 
+	// 测试插入节点
 	SECTION("Test insert_node with string identifiers") {
 		REQUIRE(g.insert_node("Node1") == true);
 		REQUIRE(g.insert_node("Node1") == false);
 		REQUIRE(g.insert_node("Node2") == true);
 	}
 
+	// 测试插入边
 	SECTION("Test insert_edge with string nodes and int weights") {
 		g.insert_node("Node1");
 		g.insert_node("Node2");
@@ -145,5 +147,18 @@ TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 		REQUIRE(g.insert_edge("Node1", "Node2", 30) == true);
 		REQUIRE(g.insert_edge("Node1", "Node2", 30) == false);
 		REQUIRE(g.insert_edge("Node1", "Node2", 40) == true);
+	}
+
+	// 测试替换节点
+	SECTION("Test replace_node") {
+		g.insert_node("Node1");
+		g.insert_node("Node2");
+
+		// 成功替换节点
+		REQUIRE(g.replace_node("Node1", "Node3") == true); // 替换存在的节点到新节点
+		REQUIRE(g.insert_node("Node1") == true); // 替换后原节点名应可重新插入
+		REQUIRE(g.insert_node("Node3") == false); // 新节点名已存在
+		REQUIRE_THROWS_AS(g.replace_node("Node4", "Node5"), std::runtime_error); // 替换不存在的节点
+		REQUIRE(g.replace_node("Node2", "Node3") == false); // Node3 已存在，替换应失败
 	}
 }

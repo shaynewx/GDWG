@@ -219,6 +219,22 @@ namespace gdwg {
 			return true;
 		}
 
+		// 替换节点 node
+		bool replace_node(N const& old_data, N const& new_data) {
+			// 如果存在值为 new_data 的节点，则返回 false
+			if (nodes_.find(new_data) != nodes_.end())
+				return false;
+			// 如果不存在包含 old_data 的节点，则抛出 runtime_error 异常
+			if (nodes_.find(old_data) == nodes_.end()) {
+				throw std::runtime_error("Cannot call gdwg::graph<N, E>::replace_node on a node that doesn't exist");
+			}
+
+			// 替换节点并返回true
+			nodes_.erase(old_data);
+			nodes_.emplace(new_data);
+			return true;
+		}
+
 	 private:
 		std::unordered_map<N, std::vector<std::pair<N, std::optional<E>>>> adj_list_; // 节点和边的邻接表
 		std::unordered_set<N> nodes_; // 节点的集合
