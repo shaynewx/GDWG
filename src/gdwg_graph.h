@@ -222,7 +222,43 @@ namespace gdwg {
 			return result; // 返回包含所有节点的向量
 		}
 
-		// 返回从src到dst的所有边
+		// 返回从src到dst的所有边，并按照指定的排序方式
+		[[nodiscard]] std::vector<std::unique_ptr<edge<N, E>>> edges(N const& src, N const& dst) {
+			// 检查src and dst是否存在
+			if (!is_node(src) or !is_node(dst)) {
+				throw std::runtime_error("Cannot call gdwg::graph<N, E>::edges if src or dst node don't exist in the "
+				                         "graph");
+			}
+
+			// 获取 edges
+			std::vector<std::unique_ptr<edge<N, E>>> edges_list;
+			const auto& adj_edges = adj_list_[src];
+			for (const auto& e : adj_edges) {
+				if (e.first == dst) {
+					if (e.second) {
+						edges_list.push_back(std::make_unique<weighted_edge<N, E>>(src, dst, *e.second));
+					}
+					else {
+						edges_list.insert(edges_list.begin(), std::make_unique<unweighted_edge<N, E>>(src, dst));
+					}
+				}
+			}
+
+			// 排序 Sort edges by weight, keeping unweighted edge at the beginning
+			std::sort(edges_list.begin(),
+			          edges_list.end(),
+			          [](const std::unique_ptr<edge<N, E>>& a, const std::unique_ptr<edge<N, E>>& b) {
+				          if (!a->is_weighted() && b->is_weighted())
+					          return true;
+				          if (a->is_weighted() && !b->is_weighted())
+					          return false;
+				          if (a->is_weighted() && b->is_weighted())
+					          return a->get_weight() < b->get_weight();
+				          return false;
+			          });
+
+			return edges_list;
+		}
 
 		// 2.4 Modifiers
 		// 插入node：插入一个新节点
