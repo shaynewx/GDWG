@@ -197,6 +197,28 @@ namespace gdwg {
 			return result.second; // 如果节点是新插入的，second 为 true
 		}
 
+		// 插入边
+		bool insert_edge(N const& src, N const& dst, std::optional<E> weight = std::nullopt) {
+			// 检查源节点和目标节点是否存在，如果不存在则抛出异常
+			if (nodes_.find(src) == nodes_.end() or nodes_.find(dst) == nodes_.end()) {
+				throw std::runtime_error("Cannot call gdwg::graph<N, E>::insert_edge when either src or dst node does "
+				                         "not exist");
+			}
+
+			// 新的边
+			auto new_edge = std::make_pair(dst, weight);
+
+			// 尝试插入边，防止重复
+			auto& edges = adj_list_[src];
+			if (std::find(edges.begin(), edges.end(), new_edge) != edges.end()) {
+				return false; // 如果边已存在则返回false
+			}
+
+			// 插入新边
+			edges.push_back(new_edge);
+			return true;
+		}
+
 	 private:
 		std::unordered_map<N, std::vector<std::pair<N, std::optional<E>>>> adj_list_; // 节点和边的邻接表
 		std::unordered_set<N> nodes_; // 节点的集合

@@ -124,4 +124,26 @@ TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 		REQUIRE(g.insert_node("Node1") == false);
 		REQUIRE(g.insert_node("Node2") == true);
 	}
+
+	SECTION("Test insert_edge with string nodes and int weights") {
+		g.insert_node("Node1");
+		g.insert_node("Node2");
+
+		REQUIRE(g.insert_edge("Node1", "Node2", 10) == true);
+		REQUIRE(g.insert_edge("Node1", "Node2", 10) == false);
+		REQUIRE(g.insert_edge("Node1", "Node2") == true);
+		REQUIRE(g.insert_edge("Node1", "Node2", 20) == true);
+
+		// 尝试在不存在的节点间插入边
+		REQUIRE_THROWS_AS(g.insert_edge("Node1", "Node3", 5), std::runtime_error);
+	}
+
+	SECTION("Test edge uniqueness between nodes") {
+		g.insert_node("Node1");
+		g.insert_node("Node2");
+
+		REQUIRE(g.insert_edge("Node1", "Node2", 30) == true);
+		REQUIRE(g.insert_edge("Node1", "Node2", 30) == false);
+		REQUIRE(g.insert_edge("Node1", "Node2", 40) == true);
+	}
 }
