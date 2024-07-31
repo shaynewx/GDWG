@@ -96,29 +96,29 @@ TEST_CASE("Graph constructor tests", "[graph]") {
 	SECTION("Initializer list constructor") {
 		graph<int, double> g{1, 2, 3};
 		REQUIRE(g.node_count() == 3);
-		REQUIRE(g.contains(1));
-		REQUIRE(g.contains(2));
+		REQUIRE(g.is_node(1));
+		REQUIRE(g.is_node(2));
 	}
 
 	SECTION("Range constructor") {
 		std::vector<int> nodes = {4, 5, 6};
 		graph<int, double> g(nodes.begin(), nodes.end());
 		REQUIRE(g.node_count() == 3);
-		REQUIRE(g.contains(4));
+		REQUIRE(g.is_node(4));
 	}
 
 	SECTION("Copy constructor") {
 		graph<int, double> g1{1, 2, 3};
 		graph<int, double> g2 = g1;
 		REQUIRE(g2.node_count() == 3);
-		REQUIRE(g2.contains(1));
+		REQUIRE(g2.is_node(1));
 	}
 
 	SECTION("Move constructor") {
 		graph<int, double> g1{1, 2, 3};
 		graph<int, double> g2 = std::move(g1);
 		REQUIRE(g2.node_count() == 3);
-		REQUIRE(g2.contains(1));
+		REQUIRE(g2.is_node(1));
 		REQUIRE(g1.node_count() == 0);
 	}
 }
@@ -188,8 +188,8 @@ TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 
 		// 正常合并，检查节点和边的迁移
 		REQUIRE_NOTHROW(g.merge_replace_node("A", "B"));
-		REQUIRE(g.contains("A") == false); // A节点应该被删除
-		REQUIRE(g.contains("B") == true); // B节点仍然存在
+		REQUIRE(g.is_node("A") == false); // A节点应该被删除
+		REQUIRE(g.is_node("B") == true); // B节点仍然存在
 		REQUIRE(g.node_count() == 2); // 总节点数为2（B, C）
 
 		// 检查B节点的边是否正确迁移
@@ -213,9 +213,25 @@ TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 		g.insert_edge("NodeX", "NodeY", 100);
 
 		REQUIRE(g.erase_node("NodeX") == true); // 删除存在的节点
-		REQUIRE(g.contains("NodeX") == false); // 确认节点已删除
+		REQUIRE(g.is_node("NodeX") == false); // 确认节点已删除
 		REQUIRE(g.is_connected("NodeX", "NodeY", 100) == false); // 确认相关边也被删除
 
 		REQUIRE(g.erase_node("NodeZ") == false); // 尝试删除不存在的节点，应返回 false
+	}
+
+	// 测试删除边
+	SECTION("Test erase_edge with src, dst, and weight") {
+		g.insert_node("NodeA");
+		g.insert_node("NodeB");
+		g.insert_edge("NodeA", "NodeB", 50);
+		g.insert_edge("NodeA", "NodeB");
+
+		REQUIRE(g.erase_edge("NodeA", "NodeB", 50) == true); // 删除指定权重的边
+		REQUIRE(g.is_connected("NodeA", "NodeB", 50) == false); // 确认边已删除
+
+		REQUIRE(g.erase_edge("NodeA", "NodeB", std::nullopt) == true); // 删除无权边
+		REQUIRE(g.is_connected("NodeA", "NodeB", std::nullopt) == false);
+
+		//		REQUIRE(g.erase_edge("NodeA", "NodeC", 100) == false); // 尝试删除不存在的边，应返回 false
 	}
 }
