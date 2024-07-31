@@ -291,6 +291,9 @@ namespace gdwg {
 		bool insert_node(const N& value) {
 			//  insert 方法返回一个 pair，其中 second 表示是否插入成功
 			auto result = nodes_.insert(value);
+			if (result.second) { // 如果成功插入了新节点，为该节点创建一个空的边列表
+				adj_list_[value] = {};
+			}
 			return result.second; // 如果节点是新插入的，second 为 true
 		}
 
@@ -404,6 +407,30 @@ namespace gdwg {
 		void clear() noexcept {
 			nodes_.clear();
 			adj_list_.clear();
+		}
+
+		// 2.7 Comparisons(operator==重载)
+		[[nodiscard]] bool operator==(graph const& other) const {
+			// 节点集合不同则两个图不相等
+			if (nodes_ != other.nodes_)
+				return false;
+
+			// 邻接列表不同则两个图不相等
+			if (adj_list_.size() != other.adj_list_.size())
+				return false;
+
+			// 对每个节点检查边的集合
+			for (const auto& node : nodes_) {
+				if (adj_list_.find(node) == adj_list_.end() or other.adj_list_.find(node) == other.adj_list_.end()) {
+					return false; // 有一个图中没有该节点的邻接列表则两个图不相等
+				}
+
+				const auto& edges_this = adj_list_.at(node);
+				const auto& edges_other = other.adj_list_.at(node);
+				if (edges_this != edges_other)
+					return false; // 如果有节点的边集合不相等则两个图不相等
+			}
+			return true;
 		}
 
 	 private:

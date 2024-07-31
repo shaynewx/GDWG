@@ -328,3 +328,5 @@ TEST_CASE("Test connections method") {
 		REQUIRE_THROWS_AS(g.connections(4), std::runtime_error);
 	}
 }
+
+// 图的operator==重载
