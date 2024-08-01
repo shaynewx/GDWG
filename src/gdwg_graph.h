@@ -479,22 +479,43 @@ namespace gdwg {
 			using difference_type = std::ptrdiff_t;
 			using iterator_category = std::bidirectional_iterator_tag;
 
-			// Iterator constructor
-			iterator() = default;
+			// 默认构造函数
+			iterator()
+			: node_it_()
+			, edge_it_()
+			, graph_ptr_(nullptr) {}
 
-			// Iterator source
-			auto operator*() -> reference;
+			// 迭代器解引用操作符,返回当前的源节点, 目标节点 和 weight
+			reference operator*() {
+				return {*node_it_, edge_it_->first, edge_it_->second};
+			}
 
-			// Iterator traversal
+			// 迭代器遍历
 			auto operator++() -> iterator&;
+
 			auto operator++(int) -> iterator;
+
 			auto operator--() -> iterator&;
+
 			auto operator--(int) -> iterator;
 
 			// Iterator comparison
 			auto operator==(iterator const& other) -> bool;
 
 		 private:
+			using node_iterator = typename std::map<N, std::vector<std::pair<N, std::optional<E>>>>::iterator;
+			using edge_iterator = typename std::vector<std::pair<N, std::optional<E>>>::iterator;
+
+			node_iterator node_it_; // 当前节点的迭代器
+			edge_iterator edge_it_; // 当前边的迭代器
+			const graph* graph_ptr_; // 指向图的指针
+
+			// 私有构造函数，只能由 graph 类访问
+			explicit iterator(node_iterator node_it, edge_iterator edge_it, const graph* graph_ptr)
+			: node_it_(node_it)
+			, edge_it_(edge_it)
+			, graph_ptr_(graph_ptr) {}
+
 			// 友元声明，以便 graph 类可以访问 iterator 类的私有成员
 			friend class graph;
 		};
