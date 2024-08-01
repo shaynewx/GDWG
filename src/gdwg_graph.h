@@ -264,7 +264,7 @@ namespace gdwg {
 
 		// [[nodiscard]] auto find(N const& src, N const& dst, std::optional<E> weight = std::nullopt) -> iterator;
 
-		// 返回所有连接到src的nodes（从任意outgoing edge找到），按升序排序
+		// 返回从 src 节点出发的所有目标节点，按升序排序
 		[[nodiscard]] std::vector<N> connections(N const& src) const {
 			// 如果src不存在抛出错误
 			if (!is_node(src)) {
@@ -406,7 +406,7 @@ namespace gdwg {
 			adj_list_.clear();
 		}
 
-		// 2.7 Comparisons(operator==重载)
+		// 2.7 Comparisons 比较两个图是否完全一致(operator==重载)
 		[[nodiscard]] bool operator==(graph const& other) const {
 			// 节点集合不同则两个图不相等
 			if (nodes_ != other.nodes_)
@@ -430,7 +430,7 @@ namespace gdwg {
 			return true;
 		}
 
-		// 2.8 格式化输出一个图的所有节点和边
+		// 2.8 输出一个图的所有节点和边
 		// 所有节点按照升序排列；每个节点的所有边也需要按顺序输出，首先是无权重的边，然后是有权重的边升序排列
 		friend std::ostream& operator<<(std::ostream& os, const graph<N, E>& g) {
 			os << '\n'; // 在输出任何节点信息之前加入一个换行符
@@ -453,9 +453,7 @@ namespace gdwg {
 						return true;
 					if (std::get<2>(lhs).has_value() && !std::get<2>(rhs).has_value())
 						return false;
-					if (std::get<2>(lhs).has_value() && std::get<2>(rhs).has_value())
-						return std::get<2>(lhs).value() < std::get<2>(rhs).value();
-					return false;
+					return std::get<2>(lhs).value() < std::get<2>(rhs).value();
 				});
 
 				// 输出所有排序后的边
@@ -467,6 +465,41 @@ namespace gdwg {
 			}
 			return os;
 		}
+
+		// 2.9 迭代器
+		class iterator {
+		 public:
+			using value_type = struct {
+				N from;
+				N to;
+				std::optional<E> weight;
+			};
+			using reference = value_type;
+			using pointer = void;
+			using difference_type = std::ptrdiff_t;
+			using iterator_category = std::bidirectional_iterator_tag;
+
+			// Iterator constructor
+			iterator() = default;
+
+			// Iterator source
+			auto operator*() -> reference;
+
+			// Iterator traversal
+			auto operator++() -> iterator&;
+			auto operator++(int) -> iterator;
+			auto operator--() -> iterator&;
+			auto operator--(int) -> iterator;
+
+			// Iterator comparison
+			auto operator==(iterator const& other) -> bool;
+
+		 private:
+			// 友元声明，以便 graph 类可以访问 iterator 类的私有成员
+			friend class graph;
+		};
+
+		// 2.5 Accessors
 
 	 private:
 		std::map<N, std::vector<std::pair<N, std::optional<E>>>> adj_list_; // 节点和边的邻接表
