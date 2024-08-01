@@ -228,42 +228,37 @@ namespace gdwg {
 		}
 
 		// 返回从src到dst的所有边，并按照指定的排序方式
-		[[nodiscard]] std::vector<std::unique_ptr<edge<N, E>>> edges(N const& src, N const& dst) {
-			// 检查src and dst是否存在
+		[[nodiscard]] std::vector<std::unique_ptr<edge<N, E>>> edges(N const& src, N const& dst) const {
+			// 检查 src 和 dst 节点是否存在，如果不存在，抛出异常
 			if (!is_node(src) or !is_node(dst)) {
 				throw std::runtime_error("Cannot call gdwg::graph<N, E>::edges if src or dst node don't exist in the "
 				                         "graph");
 			}
 
-			// 获取 edges
+			// 获取 src 节点的边列表
+			const auto& adj_edges = adj_list_.at(src);
 			std::vector<std::unique_ptr<edge<N, E>>> edges_list;
-			const auto& adj_edges = adj_list_[src];
 
-			// 遍历 adj_edges 中的每一条边 e,根据是否有权重分别操作
-			for (const auto& e : adj_edges) {
-				if (e.first == dst) {
-					if (e.second) {
-						edges_list.push_back(std::make_unique<weighted_edge<N, E>>(src, dst, *e.second));
+			// 遍历边列表，收集目标节点为 dst 的边
+			for (const auto& [target, weight] : adj_edges) {
+				if (target == dst) {
+					if (weight) {
+						edges_list.push_back(std::make_unique<weighted_edge<N, E>>(src, dst, *weight));
 					}
 					else {
-						edges_list.insert(edges_list.begin(), std::make_unique<unweighted_edge<N, E>>(src, dst));
+						edges_list.push_back(std::make_unique<unweighted_edge<N, E>>(src, dst));
 					}
 				}
 			}
 
-			// 根据有无权重 或 权重大小排序
-			std::sort(edges_list.begin(),
-			          edges_list.end(),
-			          [](const std::unique_ptr<edge<N, E>>& a, const std::unique_ptr<edge<N, E>>& b) {
-				          if (!a->is_weighted() and b->is_weighted())
-					          return true;
-				          if (a->is_weighted() and !b->is_weighted())
-					          return false;
-				          if (a->is_weighted() and b->is_weighted())
-					          return a->get_weight() < b->get_weight();
-				          return false;
-			          });
-
+			// 排序：无权重边排在前，有权重边按权重升序排序
+			std::sort(edges_list.begin(), edges_list.end(), [](const auto& a, const auto& b) {
+				if (!a->is_weighted() and b->is_weighted())
+					return true;
+				if (a->is_weighted() and !b->is_weighted())
+					return false;
+				return a->is_weighted() and b->is_weighted() and a->get_weight() < b->get_weight();
+			});
 			return edges_list;
 		}
 
