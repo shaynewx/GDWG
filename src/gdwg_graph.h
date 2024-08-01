@@ -198,7 +198,7 @@ namespace gdwg {
 		}
 
 		// 检查两个节点之间是否有特定权重的边
-		bool is_connected(const N& src, const N& dst, const std::optional<E>& weight) const {
+		[[nodiscard]] bool is_connected(N const& src, N const& dst) const {
 			// 检查 src 和 dst 节点是否存在，如果不存在，抛出异常
 			if (!is_node(src) || !is_node(dst)) {
 				throw std::runtime_error("Cannot call gdwg::graph<N, E>::is_connected if src or dst node don't exist "
@@ -207,9 +207,9 @@ namespace gdwg {
 
 			// 获取源节点的边列表
 			const auto& edges = adj_list_.find(src)->second;
-			// 检查是否存在到目标节点的特定权重的边
+			// 检查是否存在到目标节点的边
 			for (const auto& edge : edges) {
-				if (edge.first == dst and edge.second == weight) {
+				if (edge.first == dst) {
 					return true; // 找到匹配的边
 				}
 			}
