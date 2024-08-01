@@ -490,3 +490,46 @@ TEST_CASE("Graph output format test", "[graph][output]") {
 }
 
 // 测试iterator
+TEST_CASE("Iterator functionality for graph<int, int>", "[graph]") {
+	gdwg::graph<int, int> g;
+
+	// 插入节点
+	g.insert_node(1);
+	g.insert_node(7);
+	g.insert_node(12);
+	g.insert_node(14);
+	g.insert_node(19);
+	g.insert_node(21);
+	g.insert_node(31);
+
+	// 插入边
+	g.insert_edge(1, 7, 4);
+	g.insert_edge(1, 12, 3);
+	g.insert_edge(1, 21, 12);
+	g.insert_edge(7, 21, 13);
+	g.insert_edge(12, 19, 16);
+	g.insert_edge(14, 14, 0);
+	g.insert_edge(19, 1, 3);
+	g.insert_edge(19, 21, 2);
+	g.insert_edge(21, 14, 23);
+	g.insert_edge(21, 31, 14);
+
+	// 使用迭代器遍历图
+	SECTION("Verify that all edges are correctly inserted and accessible") {
+		std::vector<std::tuple<int, int, std::optional<int>>> expected_edges = {{1, 7, 4},
+		                                                                        {1, 12, 3},
+		                                                                        {1, 21, 12},
+		                                                                        {7, 21, 13},
+		                                                                        {12, 19, 16},
+		                                                                        {14, 14, 0},
+		                                                                        {19, 1, 3},
+		                                                                        {19, 21, 2},
+		                                                                        {21, 14, 23},
+		                                                                        {21, 31, 14}};
+		std::vector<std::tuple<int, int, std::optional<int>>> actual_edges;
+		for (auto edge : g) {
+			actual_edges.emplace_back(edge.from, edge.to, edge.weight);
+		}
+		REQUIRE(std::is_permutation(actual_edges.begin(), actual_edges.end(), expected_edges.begin()));
+	}
+}
