@@ -479,15 +479,24 @@ namespace gdwg {
 			using difference_type = std::ptrdiff_t;
 			using iterator_category = std::bidirectional_iterator_tag;
 
+			using node_iterator = typename std::map<N, std::vector<std::pair<N, std::optional<E>>>>::const_iterator;
+			using edge_iterator = typename std::vector<std::pair<N, std::optional<E>>>::const_iterator;
+
 			// 默认构造函数
 			iterator()
 			: node_it_()
 			, edge_it_()
 			, graph_ptr_(nullptr) {}
 
+			// 常量构造函数1
+			explicit iterator(node_iterator node_it, edge_iterator edge_it, const graph* graph_ptr)
+			: node_it_(node_it)
+			, edge_it_(edge_it)
+			, graph_ptr_(graph_ptr) {}
+
 			// 迭代器解引用操作符,返回当前的源节点, 目标节点 和 weight
 			reference operator*() {
-				return {*node_it_, edge_it_->first, edge_it_->second};
+				return {node_it_->first, edge_it_->first, edge_it_->second};
 			}
 
 			// 迭代器遍历
@@ -502,6 +511,9 @@ namespace gdwg {
 					if (node_it_ != graph_ptr_->adj_list_.end()) {
 						edge_it_ = node_it_->second.begin(); // 如果还有节点没有遍历完，则初始化边迭代器
 					}
+					else {
+						edge_it_ = {}; // 确保和end()一致
+					}
 				}
 				return *this;
 			}
@@ -515,6 +527,9 @@ namespace gdwg {
 
 			// 前置递减操作符
 			auto operator--() -> iterator& {
+				if (node_it_ == graph_ptr_->adj_list_.begin() and edge_it_ == node_it_->second.begin()) {
+					throw std::out_of_range("Iterator cannot decrement past the beginning of the graph");
+				}
 				// 如果当前节点在图的末尾或边迭代器在节点的开始，找到前一个有边的节点
 				if (node_it_ == graph_ptr_->adj_list_.end() || edge_it_ == node_it_->second.begin()) {
 					do {
@@ -540,24 +555,32 @@ namespace gdwg {
 			}
 
 		 private:
-			using node_iterator = typename std::map<N, std::vector<std::pair<N, std::optional<E>>>>::iterator;
-			using edge_iterator = typename std::vector<std::pair<N, std::optional<E>>>::iterator;
-
 			node_iterator node_it_; // 当前节点的迭代器
 			edge_iterator edge_it_; // 当前边的迭代器
 			const graph* graph_ptr_; // 指向图的指针
-
-			// 私有构造函数，只能由 graph 类访问
-			explicit iterator(node_iterator node_it, edge_iterator edge_it, const graph* graph_ptr)
-			: node_it_(node_it)
-			, edge_it_(edge_it)
-			, graph_ptr_(graph_ptr) {}
 
 			// 友元声明，以便 graph 类可以访问 iterator 类的私有成员
 			friend class graph;
 		};
 
 		// 2.5 Accessors
+
+		// 2.6 Iterator Access 迭代器访问
+		// 返回指向容器中第一个元素的迭代器
+		[[nodiscard]] iterator begin() const {
+			if (adj_list_.empty()) {
+				return end(); // 如果容器为空，begin 应该等同于 end
+			}
+			auto node_it = adj_list_.cbegin(); // 使用 cbegin 获取常量迭代器
+			return iterator(node_it, node_it->second.cbegin(), this);
+		}
+
+		// 返回指向列表末尾的迭代器
+		[[nodiscard]] iterator end() const {
+			// 创建一个表示结束的迭代器，它的节点迭代器指向邻接列表的末尾
+			static std::vector<std::pair<N, std::optional<E>>> empty_edge_list; // 用于安全返回 end 迭代器
+			return iterator(adj_list_.cend(), empty_edge_list.end(), this);
+		}
 
 	 private:
 		std::map<N, std::vector<std::pair<N, std::optional<E>>>> adj_list_; // 节点和边的邻接表
