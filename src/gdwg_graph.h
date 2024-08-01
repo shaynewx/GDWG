@@ -479,8 +479,8 @@ namespace gdwg {
 			using difference_type = std::ptrdiff_t;
 			using iterator_category = std::bidirectional_iterator_tag;
 
-			using node_iterator = typename std::map<N, std::vector<std::pair<N, std::optional<E>>>>::const_iterator;
-			using edge_iterator = typename std::vector<std::pair<N, std::optional<E>>>::const_iterator;
+			using node_iterator = typename std::map<N, std::vector<std::pair<N, std::optional<E>>>>::iterator;
+			using edge_iterator = typename std::vector<std::pair<N, std::optional<E>>>::iterator;
 
 			// 默认构造函数
 			iterator()
@@ -563,7 +563,9 @@ namespace gdwg {
 			friend class graph;
 		};
 
-		// 2.5 Accessors
+		// 2.4.7 auto erase_edge(iterator i) -> iterator; 删除指向迭代器i的边
+		// 2.4.8 auto erase_edge(iterator i, iterator s) -> iterator;
+		// 删除迭代器 [i, s) 之间的所有边
 
 		// 2.6 Iterator Access 迭代器访问
 		// 返回指向容器中第一个元素的迭代器
@@ -571,15 +573,18 @@ namespace gdwg {
 			if (adj_list_.empty()) {
 				return end(); // 如果容器为空，begin 应该等同于 end
 			}
-			auto node_it = adj_list_.cbegin(); // 使用 cbegin 获取常量迭代器
-			return iterator(node_it, node_it->second.cbegin(), this);
+			// 强制转换去除常量性
+			auto node_it = const_cast<std::map<N, std::vector<std::pair<N, std::optional<E>>>>&>(adj_list_).begin();
+			return iterator(node_it, node_it->second.begin(), const_cast<graph*>(this));
 		}
 
 		// 返回指向列表末尾的迭代器
 		[[nodiscard]] iterator end() const {
 			// 创建一个表示结束的迭代器，它的节点迭代器指向邻接列表的末尾
 			static std::vector<std::pair<N, std::optional<E>>> empty_edge_list; // 用于安全返回 end 迭代器
-			return iterator(adj_list_.cend(), empty_edge_list.end(), this);
+			// 强制转换去除常量性
+			auto node_it = const_cast<std::map<N, std::vector<std::pair<N, std::optional<E>>>>&>(adj_list_).end();
+			return iterator(node_it, empty_edge_list.end(), const_cast<graph*>(this));
 		}
 
 	 private:

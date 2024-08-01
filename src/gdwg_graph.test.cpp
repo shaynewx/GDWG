@@ -594,3 +594,5 @@ TEST_CASE("Iterator functionality for graph<int, int>", "[graph]") {
 		REQUIRE(begin != same_as_begin); // 确认改变后不再相等
 	}
 }
+
+// 测试删除指向迭代器i的边
