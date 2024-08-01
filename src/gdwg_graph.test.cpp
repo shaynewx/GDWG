@@ -596,3 +596,30 @@ TEST_CASE("Iterator functionality for graph<int, int>", "[graph]") {
 }
 
 // 测试2.4.7 测试删除指向迭代器i的边
+TEST_CASE("Test erase_edge") {
+	gdwg::graph<int, int> g;
+	g.insert_node(1);
+	g.insert_node(2);
+	g.insert_node(3);
+
+	g.insert_edge(1, 2, 10);
+	g.insert_edge(2, 3, 20);
+
+	auto it = g.begin();
+	auto next_it = g.erase_edge(it);
+
+	SECTION("Iterator points to next element after erase") {
+		REQUIRE((*next_it).from == 2);
+		REQUIRE((*next_it).to == 3);
+		REQUIRE((*next_it).weight == 20);
+	}
+
+	SECTION("Check if the edge is really removed") {
+		REQUIRE(g.is_connected(1, 2) == false);
+	}
+
+	SECTION("Erasing last edge should return end") {
+		auto last_edge = g.erase_edge(next_it);
+		REQUIRE(last_edge == g.end());
+	}
+}
