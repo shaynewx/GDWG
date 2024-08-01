@@ -619,6 +619,15 @@ namespace gdwg {
 			}
 		}
 
+		// 2.4.8 删除迭代器 [i, s) 之间的所有边
+		iterator erase_edge(iterator i, iterator s) {
+			while (i != s) {
+				auto current = i++;
+				erase_edge(current);
+			}
+			return s;
+		}
+
 	 private:
 		std::map<N, std::vector<std::pair<N, std::optional<E>>>> adj_list_; // 节点和边的邻接表
 		std::set<N> nodes_; // 节点的集合
