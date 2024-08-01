@@ -123,7 +123,7 @@ TEST_CASE("Graph constructor tests", "[graph]") {
 	}
 }
 
-// 图的成员函数测试
+// 图的构造函数测试
 TEST_CASE("Constructors", "[graph]") {
 	// 移动构造函数测试
 	SECTION("Test move constructor") {
@@ -153,8 +153,46 @@ TEST_CASE("Constructors", "[graph]") {
 		REQUIRE(g2.is_connected("Node1", "Node2", 10) == true);
 		REQUIRE(g1.empty() == true); // g1 已被清空
 	}
+
+	// 复制构造函数
+	SECTION("Test copy constructor") {
+		gdwg::graph<std::string, int> g1;
+		g1.insert_node("Node1");
+		g1.insert_node("Node2");
+		g1.insert_edge("Node1", "Node2", 10);
+
+		gdwg::graph<std::string, int> g2(g1); // 复制构造函数
+		REQUIRE(g2.is_node("Node1") == true);
+		REQUIRE(g2.is_node("Node2") == true);
+		REQUIRE(g2.is_connected("Node1", "Node2", 10) == true);
+
+		// 原始图未被修改
+		REQUIRE(g1.is_node("Node1") == true);
+		REQUIRE(g1.is_node("Node2") == true);
+		REQUIRE(g1.is_connected("Node1", "Node2", 10) == true);
+	}
+
+	// 复制赋值运算符测试
+	SECTION("Test copy assignment operator") {
+		gdwg::graph<std::string, int> g1;
+		g1.insert_node("Node1");
+		g1.insert_node("Node2");
+		g1.insert_edge("Node1", "Node2", 10);
+
+		gdwg::graph<std::string, int> g2;
+		g2 = g1; // 复制赋值运算符
+		REQUIRE(g2.is_node("Node1") == true);
+		REQUIRE(g2.is_node("Node2") == true);
+		REQUIRE(g2.is_connected("Node1", "Node2", 10) == true);
+
+		// 原始图未被修改
+		REQUIRE(g1.is_node("Node1") == true);
+		REQUIRE(g1.is_node("Node2") == true);
+		REQUIRE(g1.is_connected("Node1", "Node2", 10) == true);
+	}
 }
 
+// 图的成员函数测试
 TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 	gdwg::graph<std::string, int> g;
 
