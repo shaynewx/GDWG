@@ -532,4 +532,41 @@ TEST_CASE("Iterator functionality for graph<int, int>", "[graph]") {
 		}
 		REQUIRE(std::is_permutation(actual_edges.begin(), actual_edges.end(), expected_edges.begin()));
 	}
+
+	SECTION("Iterator increment and content checking") {
+		auto it = g.begin();
+		REQUIRE(it != g.end());
+		auto edge = *it;
+		REQUIRE(edge.from == 1);
+		REQUIRE(edge.to == 7);
+		REQUIRE(edge.weight == 4); // 检查第一条边
+		++it;
+		edge = *it;
+		REQUIRE(edge.from == 1);
+		REQUIRE(edge.to == 12);
+		REQUIRE(edge.weight == 3); // 检查第二条边
+	}
+
+	SECTION("Iterator decrement") {
+		auto it = g.end();
+		--it;
+		auto edge = *it;
+		REQUIRE(edge.from == 21);
+		REQUIRE(edge.to == 31);
+		REQUIRE(edge.weight == 14); // 检查最后一条边
+		--it;
+		edge = *it;
+		REQUIRE(edge.from == 21);
+		REQUIRE(edge.to == 14);
+		REQUIRE(edge.weight == 23); // 检查倒数第二条边
+	}
+
+	SECTION("Comparison of iterator begin and end") {
+		auto it_begin = g.begin();
+		auto it_end = g.end();
+		REQUIRE(it_begin != it_end); // Begin 和 end 不应该相同
+		++it_begin;
+		--it_end;
+		REQUIRE(it_begin != it_end); // 自增后的 begin 和自减后的 end 也不应该相同
+	}
 }
