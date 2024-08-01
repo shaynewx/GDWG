@@ -30,8 +30,8 @@ namespace gdwg {
 	class edge {
 	 public:
 		virtual ~edge() = default; // 用于保证派生类对象可以通过基类指针安全销毁
-		virtual std::string print_edge() const = 0; // 用于返回边的字符串表述（ ）
-		virtual bool is_weighted() const = 0; // 返回边是否为加权边
+		[[nodiscard]] virtual std::string print_edge() const = 0; // 用于返回边的字符串表述（ ）
+		[[nodiscard]] virtual bool is_weighted() const = 0; // 返回边是否为加权边
 		virtual std::optional<E> get_weight() const = 0; // 返回权重（无权边返回std::nullopt）
 		virtual std::pair<N, N> get_nodes() const = 0; // 返回边的源节点和目标节点
 		virtual bool operator==(const edge& other) const = 0;
@@ -52,14 +52,14 @@ namespace gdwg {
 
 		// 实现纯虚函数
 		// 返回边的字符串表述
-		std::string print_edge() const override {
+		[[nodiscard]] std::string print_edge() const override {
 			std::ostringstream oss; // 定义输出字符流
 			oss << src_ << " -> " << dst_ << " | W | " << weight_;
 			return oss.str();
 		}
 
 		// 返回边是否为加权边（是）
-		bool is_weighted() const override {
+		[[nodiscard]] bool is_weighted() const override {
 			return true;
 		}
 
@@ -488,12 +488,6 @@ namespace gdwg {
 			, edge_it_()
 			, graph_ptr_(nullptr) {}
 
-			// 常量构造函数1
-			explicit iterator(node_iterator node_it, edge_iterator edge_it, const graph* graph_ptr)
-			: node_it_(node_it)
-			, edge_it_(edge_it)
-			, graph_ptr_(graph_ptr) {}
-
 			// 迭代器解引用操作符,返回当前的源节点, 目标节点 和 weight
 			reference operator*() {
 				return {node_it_->first, edge_it_->first, edge_it_->second};
@@ -559,13 +553,15 @@ namespace gdwg {
 			edge_iterator edge_it_; // 当前边的迭代器
 			const graph* graph_ptr_; // 指向图的指针
 
+			// 构造指向特定元素的迭代器函数
+			explicit iterator(node_iterator node_it, edge_iterator edge_it, const graph* graph_ptr)
+			: node_it_(node_it)
+			, edge_it_(edge_it)
+			, graph_ptr_(graph_ptr) {}
+
 			// 友元声明，以便 graph 类可以访问 iterator 类的私有成员
 			friend class graph;
 		};
-
-		// 2.4.7 auto erase_edge(iterator i) -> iterator; 删除指向迭代器i的边
-		// 2.4.8 auto erase_edge(iterator i, iterator s) -> iterator;
-		// 删除迭代器 [i, s) 之间的所有边
 
 		// 2.6 Iterator Access 迭代器访问
 		// 返回指向容器中第一个元素的迭代器
@@ -585,6 +581,42 @@ namespace gdwg {
 			// 强制转换去除常量性
 			auto node_it = const_cast<std::map<N, std::vector<std::pair<N, std::optional<E>>>>&>(adj_list_).end();
 			return iterator(node_it, empty_edge_list.end(), const_cast<graph*>(this));
+		}
+
+		// 2.4.7 删除指向迭代器i的边
+		iterator erase_edge(iterator i) {
+			if (i == end()) {
+				return end(); // 如果迭代器已经是end，则直接返回
+			}
+
+			auto node_it = i.node_it_;
+			auto edge_it = i.edge_it_;
+
+			if (edge_it == node_it->second.end()) {
+				return end();
+			}
+
+			// 删除当前边并计算下一个元素的位置
+			node_it->second.erase(edge_it);
+			if (node_it->second.empty()) {
+				// 如果当前节点没有更多边，移动到下一个有边的节点
+				do {
+					++node_it;
+					if (node_it == adj_list_.end())
+						return end(); // 如果没有更多节点，返回end
+				} while (node_it->second.empty());
+				return iterator(node_it, node_it->second.begin(), this);
+			}
+			else {
+				// 否则，返回当前节点的下一条边
+				if (edge_it != node_it->second.end()) {
+					return iterator(node_it, edge_it, this);
+				}
+				else {
+					// 如果是最后一条边被删除，返回下一个节点的第一条边
+					return iterator(++node_it, node_it->second.begin(), this);
+				}
+			}
 		}
 
 	 private:
