@@ -501,7 +501,7 @@ namespace gdwg {
 
 			// 迭代器遍历
 			// 前置递增操作符
-			auto operator++() -> iterator& {
+			iterator& operator++() {
 				++edge_it_; // 增加边迭代器，移动到下一条边
 				if (edge_it_ == node_it_->second.end()) {
 					++node_it_; // 如果当前节点的所有边都已遍历完，增加节点迭代器，移动到下一个节点
@@ -519,14 +519,14 @@ namespace gdwg {
 			}
 
 			// 后置递增操作符
-			auto operator++(int) -> iterator {
+			iterator operator++(int) {
 				iterator temp = *this; // 创建当前迭代器的副本
 				++(*this); // 调用前置递增操作符
 				return temp;
 			}
 
 			// 前置递减操作符
-			auto operator--() -> iterator& {
+			iterator& operator--() {
 				if (node_it_ == graph_ptr_->adj_list_.begin() and edge_it_ == node_it_->second.begin()) {
 					throw std::out_of_range("Iterator cannot decrement past the beginning of the graph");
 				}
@@ -542,14 +542,14 @@ namespace gdwg {
 			}
 
 			// 后置递减操作符
-			auto operator--(int) -> iterator {
+			iterator operator--(int) {
 				iterator temp = *this; // 创建当前迭代器的副本
 				--(*this); // 调用前置递减操作符
 				return temp;
 			}
 
 			// 比较操作符
-			auto operator==(const iterator& other) const -> bool {
+			bool operator==(const iterator& other) const {
 				// 比较当前迭代器与另一个迭代器是否相等
 				return node_it_ == other.node_it_ and edge_it_ == other.edge_it_ and graph_ptr_ == other.graph_ptr_;
 			}

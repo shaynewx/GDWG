@@ -569,4 +569,28 @@ TEST_CASE("Iterator functionality for graph<int, int>", "[graph]") {
 		--it_end;
 		REQUIRE(it_begin != it_end); // 自增后的 begin 和自减后的 end 也不应该相同
 	}
+
+	SECTION("Post-increment and post-decrement functionality") {
+		auto it = g.begin();
+		auto prev_it = it++;
+		REQUIRE((*prev_it).from == (*g.begin()).from);
+		REQUIRE((*prev_it).to == (*g.begin()).to);
+		REQUIRE((*prev_it).weight == (*g.begin()).weight); // 确保后置递增前后的迭代器指向相同的边
+
+		auto next_it = it--;
+		REQUIRE((*next_it).from == (*std::next(g.begin())).from);
+		REQUIRE((*next_it).to == (*std::next(g.begin())).to);
+		REQUIRE((*next_it).weight == (*std::next(g.begin())).weight); // 确保后置递减前后的迭代器指向相同的边
+	}
+
+	SECTION("Equality and inequality of iterators") {
+		auto begin = g.begin();
+		auto same_as_begin = g.begin();
+		auto end = g.end();
+
+		REQUIRE(begin == same_as_begin); // 测试相同位置的迭代器是否相等
+		REQUIRE(begin != end); // 测试不同位置的迭代器是否不等
+		same_as_begin++;
+		REQUIRE(begin != same_as_begin); // 确认改变后不再相等
+	}
 }
