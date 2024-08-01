@@ -347,7 +347,7 @@ namespace gdwg {
 			// 去除重复边
 			for (auto& edge : old_edges) {
 				auto it = std::find_if(new_edges.begin(), new_edges.end(), [&edge](const auto& existing_edge) {
-					return existing_edge.first == edge.first && existing_edge.second == edge.second;
+					return existing_edge.first == edge.first and existing_edge.second == edge.second;
 				});
 
 				if (it == new_edges.end()) { // 如果没找到相同的边，才添加
@@ -395,7 +395,7 @@ namespace gdwg {
 			edges.erase(
 			    std::remove_if(edges.begin(),
 			                   edges.end(),
-			                   [dst, weight](const auto& edge) { return edge.first == dst && edge.second == weight; }),
+			                   [dst, weight](const auto& edge) { return edge.first == dst and edge.second == weight; }),
 			    edges.end());
 			return edges.size() != before;
 		}
@@ -449,9 +449,9 @@ namespace gdwg {
 				std::sort(edges.begin(), edges.end(), [](const auto& lhs, const auto& rhs) {
 					if (std::get<1>(lhs) != std::get<1>(rhs))
 						return std::get<1>(lhs) < std::get<1>(rhs);
-					if (!std::get<2>(lhs).has_value() && std::get<2>(rhs).has_value())
+					if (!std::get<2>(lhs).has_value() and std::get<2>(rhs).has_value())
 						return true;
-					if (std::get<2>(lhs).has_value() && !std::get<2>(rhs).has_value())
+					if (std::get<2>(lhs).has_value() and !std::get<2>(rhs).has_value())
 						return false;
 					return std::get<2>(lhs).value() < std::get<2>(rhs).value();
 				});
@@ -491,16 +491,53 @@ namespace gdwg {
 			}
 
 			// 迭代器遍历
-			auto operator++() -> iterator&;
+			// 前置递增操作符
+			auto operator++() -> iterator& {
+				++edge_it_; // 增加边迭代器，移动到下一条边
+				if (edge_it_ == node_it_->second.end()) {
+					++node_it_; // 如果当前节点的所有边都已遍历完，增加节点迭代器，移动到下一个节点
+					while (node_it_ != graph_ptr_->adj_list_.end() and node_it_->second.empty()) {
+						++node_it_; // 跳过没有边的节点，找到下一个有边的节点
+					}
+					if (node_it_ != graph_ptr_->adj_list_.end()) {
+						edge_it_ = node_it_->second.begin(); // 如果还有节点没有遍历完，则初始化边迭代器
+					}
+				}
+				return *this;
+			}
 
-			auto operator++(int) -> iterator;
+			// 后置递增操作符
+			auto operator++(int) -> iterator {
+				iterator temp = *this; // 创建当前迭代器的副本
+				++(*this); // 调用前置递增操作符
+				return temp;
+			}
 
-			auto operator--() -> iterator&;
+			// 前置递减操作符
+			auto operator--() -> iterator& {
+				// 如果当前节点在图的末尾或边迭代器在节点的开始，找到前一个有边的节点
+				if (node_it_ == graph_ptr_->adj_list_.end() || edge_it_ == node_it_->second.begin()) {
+					do {
+						--node_it_;
+					} while (node_it_->second.empty());
+					edge_it_ = node_it_->second.end(); // 将边迭代器指向该节点的最后一条边
+				}
+				--edge_it_; // 减少边迭代器，移动到前一条边
+				return *this;
+			}
 
-			auto operator--(int) -> iterator;
+			// 后置递减操作符
+			auto operator--(int) -> iterator {
+				iterator temp = *this; // 创建当前迭代器的副本
+				--(*this); // 调用前置递减操作符
+				return temp;
+			}
 
-			// Iterator comparison
-			auto operator==(iterator const& other) -> bool;
+			// 比较操作符
+			auto operator==(const iterator& other) const -> bool {
+				// 比较当前迭代器与另一个迭代器是否相等
+				return node_it_ == other.node_it_ and edge_it_ == other.edge_it_ and graph_ptr_ == other.graph_ptr_;
+			}
 
 		 private:
 			using node_iterator = typename std::map<N, std::vector<std::pair<N, std::optional<E>>>>::iterator;

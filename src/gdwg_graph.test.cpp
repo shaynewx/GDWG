@@ -488,3 +488,5 @@ TEST_CASE("Graph output format test", "[graph][output]") {
 )");
 	CHECK(out.str() == expected_output);
 }
+
+// 测试iterator
