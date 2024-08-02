@@ -628,6 +628,22 @@ namespace gdwg {
 			return s;
 		}
 
+		// 2.5 返回 指向与指定 src、dst 和权重等价的边的迭代器
+		[[nodiscard]] iterator find(N const& src, N const& dst, std::optional<E> weight = std::nullopt) {
+			auto src_it = adj_list_.find(src);
+			if (src_it == adj_list_.end()) {
+				return end(); // 如果不存在源节点也就不存在边，返回end()
+			}
+
+			auto& edges = src_it->second;
+			for (auto it = edges.begin(); it != edges.end(); ++it) {
+				if (it->first == dst and it->second == weight) {
+					return iterator(src_it, it, this); // 返回找到匹配的边
+				}
+			}
+			return end(); // 未找到匹配的边，返回 end()
+		}
+
 	 private:
 		std::map<N, std::vector<std::pair<N, std::optional<E>>>> adj_list_; // 节点和边的邻接表
 		std::set<N> nodes_; // 节点的集合
