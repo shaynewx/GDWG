@@ -198,7 +198,7 @@ namespace gdwg {
 
 		// Check if there is an edge of a certain weight between two nodes
 		[[nodiscard]] bool is_connected(N const& src, N const& dst) const {
-			// Check if the src and dst nodes exist, if not, throw an exception
+			// Check if the src and dst nodes exist, if not, throw an error
 			if (!is_node(src) || !is_node(dst)) {
 				throw std::runtime_error("Cannot call gdwg::graph<N, E>::is_connected if src or dst node don't exist "
 				                         "in the graph");
@@ -215,30 +215,31 @@ namespace gdwg {
 			return false;
 		}
 
-		// 返回图中节点的数量
+		// Return the number of nodes in the graph
 		[[nodiscard]] std::size_t node_count() const {
 			return nodes_.size();
 		}
 
-		// 按ascending order返回所有nodes
+		// Return all nodes in ascending order
 		[[nodiscard]] std::vector<N> nodes() {
-			std::vector<N> result(nodes_.begin(), nodes_.end()); // 直接从 set 复制元素到 vector，元素已经是有序的
-			return result; // 返回包含所有节点的向量
+			// Copy directly from set to vector since it is already sorted
+			std::vector<N> result(nodes_.begin(), nodes_.end());
+			return result;
 		}
 
-		// 返回从src到dst的所有边，并按照指定的排序方式
+		// Return all edges from src to dst in the specified order
 		[[nodiscard]] std::vector<std::unique_ptr<edge<N, E>>> edges(N const& src, N const& dst) const {
-			// 检查 src 和 dst 节点是否存在，如果不存在，抛出异常
+			// Check if the src and dst nodes exist, if not, throw an error
 			if (!is_node(src) or !is_node(dst)) {
 				throw std::runtime_error("Cannot call gdwg::graph<N, E>::edges if src or dst node don't exist in the "
 				                         "graph");
 			}
 
-			// 获取 src 节点的边列表
+			// Get the edge list of the src node
 			const auto& adj_edges = adj_list_.at(src);
 			std::vector<std::unique_ptr<edge<N, E>>> edges_list;
 
-			// 遍历边列表，收集目标节点为 dst 的边
+			// Traverse the edge list and collect the edges whose target node is dst
 			for (const auto& [target, weight] : adj_edges) {
 				if (target == dst) {
 					if (weight) {
@@ -250,7 +251,7 @@ namespace gdwg {
 				}
 			}
 
-			// 排序：无权重边排在前，有权重边按权重升序排序
+			//  Unweighted edges are placed first, and weighted edges are sorted in ascending order of weight
 			std::sort(edges_list.begin(), edges_list.end(), [](const auto& a, const auto& b) {
 				if (!a->is_weighted() and b->is_weighted())
 					return true;
@@ -261,81 +262,81 @@ namespace gdwg {
 			return edges_list;
 		}
 
-		// [[nodiscard]] auto find(N const& src, N const& dst, std::optional<E> weight = std::nullopt) -> iterator;
-
-		// 返回从 src 节点出发的所有目标节点，按升序排序
+		// Returns all dst nodes starting from the src node, sorted in ascending order
 		[[nodiscard]] std::vector<N> connections(N const& src) const {
-			// 如果src不存在抛出错误
+			// If src does not exist, throw an error
 			if (!is_node(src)) {
 				throw std::runtime_error("Cannot call gdwg::graph<N, E>::connections if src doesn't exist in the "
 				                         "graph");
 			}
 
-			auto it = adj_list_.find(src); // 在邻接表 adj_list_ 中查找 src 节点
-			std::set<N> unique_connections; // 存储唯一的目标节点
+			auto it = adj_list_.find(src); // Find the src node in the adj_list_
+			std::set<N> unique_connections; // Stores a unique target node
 			if (it != adj_list_.end()) {
 				for (const auto& edge : it->second) {
-					unique_connections.insert(edge.first); // 每条边的目标节点插入 unique_connections
+					// Insert unique_connections into the target node of each edge
+					unique_connections.insert(edge.first);
 				}
 			}
-			// 转换为 std::vector输出
+			// Convert to std::vector output
 			return std::vector<N>(unique_connections.begin(), unique_connections.end());
 		}
 
 		// 2.4 Modifiers
-		// 插入node：插入一个新节点
+		// Insert a new node
 		bool insert_node(const N& value) {
-			//  insert 方法返回一个 pair，其中 second 表示是否插入成功
+			// Return a pair, where the second indicates whether the insertion is successful
 			auto result = nodes_.insert(value);
-			if (result.second) { // 如果成功插入了新节点，为该节点创建一个空的边列表
+
+			// If the new node is successfully inserted, create an empty edge list for that node
+			if (result.second) {
 				adj_list_[value] = {};
 			}
-			return result.second; // 如果节点是新插入的，second 为 true
+			return result.second; // If the node is newly inserted, second is true
 		}
 
-		// 插入边
+		// Insert a new edge
 		bool insert_edge(N const& src, N const& dst, std::optional<E> weight = std::nullopt) {
-			// 检查源节点和目标节点是否存在，如果不存在则抛出异常
-			if (!is_node(src) || !is_node(dst)) {
+			// Check if the src and the dst exist, throw an error if they do not exist
+			if (!is_node(src) or !is_node(dst)) {
 				throw std::runtime_error("Cannot call gdwg::graph<N, E>::insert_edge when either src or dst node does "
 				                         "not exist");
 			}
 
-			// 新的边
+			// New edge
 			auto new_edge = std::make_pair(dst, weight);
 
-			// 尝试插入边，防止重复
 			auto& edges = adj_list_[src];
 			if (std::find(edges.begin(), edges.end(), new_edge) != edges.end()) {
-				return false; // 如果边已存在则返回false
+				return false; // Return false if the edge already exists
 			}
 
-			// 插入新边
+			// Insert the new edge
 			edges.push_back(new_edge);
 			return true;
 		}
 
-		// 替换节点 node（用 new_data 替换图中存储的 old_data）
+		// Replace node (replace old_data stored in the graph with new_data)
 		bool replace_node(N const& old_data, N const& new_data) {
-			// 如果存在值为 new_data 的节点，则返回 false
+			// Return false if there is a node with value new_data
 			if (nodes_.find(new_data) != nodes_.end())
 				return false;
-			// 如果不存在包含 old_data 的节点，则抛出 runtime_error 异常
 
+			// Throw an error if there is no node containing old_data
 			if (!is_node(old_data)) {
 				throw std::runtime_error("Cannot call gdwg::graph<N, E>::replace_node on a node that doesn't exist");
 			}
 
-			// 替换节点：先删除旧节点，再插入新节点并返回true
+			// Replace node: first delete the old data, then insert the new data
 			nodes_.erase(old_data);
 			nodes_.emplace(new_data);
 			return true;
 		}
 
-		// merge replace node(将旧节点上的边和权重迁移到新节点上)
+		// Migrate the edges and weights on the old data to the new data
 		void merge_replace_node(N const& old_data, N const& new_data) {
-			// 如果 old_data 或 new_data 不存在于图中，则抛出异常is
-			if (!is_node(old_data) || !is_node(new_data)) {
+			// Throw an error if old_data or new_data does not exist
+			if (!is_node(old_data) or !is_node(new_data)) {
 				throw std::runtime_error("Cannot call gdwg::graph<N, E>::merge_replace_node on old or new data if they "
 				                         "don't exist in the graph");
 			}
@@ -343,48 +344,49 @@ namespace gdwg {
 			auto& old_edges = adj_list_[old_data];
 			auto& new_edges = adj_list_[new_data];
 
-			// 去除重复边
+			// Remove duplicate edges
 			for (auto& edge : old_edges) {
 				auto it = std::find_if(new_edges.begin(), new_edges.end(), [&edge](const auto& existing_edge) {
 					return existing_edge.first == edge.first and existing_edge.second == edge.second;
 				});
 
-				if (it == new_edges.end()) { // 如果没找到相同的边，才添加
+				if (it == new_edges.end()) {
+					// If no identical edge is found, move the edge
 					new_edges.push_back(std::move(edge));
 				}
 			}
-
 			old_edges.clear();
 			nodes_.erase(old_data);
 			adj_list_.erase(old_data);
 		}
 
-		// 删除所有值为value的节点
+		// Delete all nodes whose value is value
 		bool erase_node(N const& value) {
-			// 找不到该点则返回false
+			// Return false if the point is not found
 			if (!is_node(value) || !is_node(value)) {
 				return false;
 			}
 
-			// 从邻接列表中删除与该节点相关的所有边
+			// Remove all edges associated with this node from the adjacency list
 			adj_list_.erase(value);
 
-			// 遍历图中所有节点的邻接列表
+			// Iterate over the adjacency lists of all nodes in the graph
 			for (auto& pair : adj_list_) {
-				// 访问当前节点的边列表，并删除所有目标节点为 value 的边
+				// Access the edge list of the current node and delete all edges whose dst node is value
 				auto& edges = pair.second;
 				edges.erase(
 				    std::remove_if(edges.begin(), edges.end(), [value](const auto& edge) { return edge.first == value; }),
 				    edges.end());
 			}
-			// 删除节点
+			// Delete the node
 			nodes_.erase(nodes_.find(value));
 			return true;
 		}
 
-		// 删除边（删除表示从 src 到 dst 的边，如果 weight 是 std::nullopt，删除无权边；否则删除具体权重的边）
+		// Delete the edge from src to dst. If weight is std::nullopt, delete the unweighted edge;
+		// otherwise delete the edge with a specific weight
 		bool erase_edge(N const& src, N const& dst, std::optional<E> weight = std::nullopt) {
-			if (!is_node(src) || !is_node(dst)) {
+			if (!is_node(src) or !is_node(dst)) {
 				throw std::runtime_error("Cannot call gdwg::graph<N, E>::erase_edge on src or dst if they don't exist "
 				                         "in the graph");
 			}
