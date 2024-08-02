@@ -386,13 +386,17 @@ namespace gdwg {
 		// Delete the edge from src to dst. If weight is std::nullopt, delete the unweighted edge;
 		// otherwise delete the edge with a specific weight
 		bool erase_edge(N const& src, N const& dst, std::optional<E> weight = std::nullopt) {
+			// Check if the src and dst nodes exist, if not, throw an error
 			if (!is_node(src) or !is_node(dst)) {
 				throw std::runtime_error("Cannot call gdwg::graph<N, E>::erase_edge on src or dst if they don't exist "
 				                         "in the graph");
 			}
 
+			// Retrieve the list of edges from the source node
 			auto& edges = adj_list_[src];
 			auto before = edges.size();
+
+			// Erase edges that match the destination node and the specified weight (if any)
 			edges.erase(
 			    std::remove_if(edges.begin(),
 			                   edges.end(),
@@ -401,52 +405,59 @@ namespace gdwg {
 			return edges.size() != before;
 		}
 
-		// 删除所有点
+		// Delete all nodes
 		void clear() noexcept {
 			nodes_.clear();
 			adj_list_.clear();
 		}
 
-		// 2.7 Comparisons 比较两个图是否完全一致(operator==重载)
+		// 2.7 Compare two graphs to see if they are exactly the same (operator== overloaded)
 		[[nodiscard]] bool operator==(graph const& other) const {
-			// 节点集合不同则两个图不相等
+			// If the node sets are different, then the two graphs are not different
 			if (nodes_ != other.nodes_)
 				return false;
 
-			// 邻接列表不同则两个图不相等
+			// If the adj_lists are different, then the two graphs are different
 			if (adj_list_.size() != other.adj_list_.size())
 				return false;
 
-			// 对每个节点检查边的集合
+			// For each node, check the set of edges
 			for (const auto& node : nodes_) {
+				// If one of the graphs does not have the adj_list of the node, then the two graphs are different
 				if (adj_list_.find(node) == adj_list_.end() or other.adj_list_.find(node) == other.adj_list_.end()) {
-					return false; // 有一个图中没有该节点的邻接列表则两个图不相等
+					return false;
 				}
 
 				const auto& edges_this = adj_list_.at(node);
 				const auto& edges_other = other.adj_list_.at(node);
+
+				// If the edge sets of any nodes are not equal, then the two graphs are different
 				if (edges_this != edges_other)
-					return false; // 如果有节点的边集合不相等则两个图不相等
+					return false;
 			}
 			return true;
 		}
 
-		// 2.8 输出一个图的所有节点和边
-		// 所有节点按照升序排列；每个节点的所有边也需要按顺序输出，首先是无权重的边，然后是有权重的边升序排列
+		// 2.8 Output all nodes and edges of a graph
+		// All nodes are sorted in ascending order;
+		// all edges of each node also need to be output in order, first the unweighted edges,
+		// then the weighted edges in ascending order
 		friend std::ostream& operator<<(std::ostream& os, const graph<N, E>& g) {
-			os << '\n'; // 在输出任何节点信息之前加入一个换行符
-			std::vector<std::tuple<N, N, std::optional<E>>> edges; // 定义一个向量 edges，用来临时存储和排序所有边的信息
+			os << '\n';
+			std::vector<std::tuple<N, N, std::optional<E>>> edges; // Temporarily store and sort all edge information
 
 			for (const auto& [node, adj_edges] : g.adj_list_) {
-				os << node << " (\n"; // 输出每个节点的名称和一个开括号，表示开始列出与该节点相关的边
+				os << node << " (\n";
 
-				// 清空 edges 向量，然后将当前节点的所有边添加到这个向量中
+				// Clear the edges vector and add all edges of the current node to this vector
 				edges.clear();
 				for (const auto& edge : adj_edges) {
 					edges.emplace_back(node, edge.first, edge.second);
 				}
 
-				// 首先按目标节点排序，如果目标节点相同，无权边排在有权边前面，最后按权重排序
+				// First, sort by target node
+				// If the target nodes are the same, the unweighted edges are placed before the weighted edges
+				// Finally, sort by weight
 				std::sort(edges.begin(), edges.end(), [](const auto& lhs, const auto& rhs) {
 					if (std::get<1>(lhs) != std::get<1>(rhs))
 						return std::get<1>(lhs) < std::get<1>(rhs);
@@ -457,7 +468,7 @@ namespace gdwg {
 					return std::get<2>(lhs).value() < std::get<2>(rhs).value();
 				});
 
-				// 输出所有排序后的边
+				// Output all sorted edges
 				for (const auto& edge : edges) {
 					os << "  " << std::get<0>(edge) << " -> " << std::get<1>(edge) << " | "
 					   << (std::get<2>(edge) ? "W | " + std::to_string(std::get<2>(edge).value()) : "U") << '\n';
@@ -467,7 +478,7 @@ namespace gdwg {
 			return os;
 		}
 
-		// 2.9 迭代器
+		// 2.9 Class of iterator
 		class iterator {
 		 public:
 			using value_type = struct {
@@ -483,44 +494,47 @@ namespace gdwg {
 			using node_iterator = typename std::map<N, std::vector<std::pair<N, std::optional<E>>>>::iterator;
 			using edge_iterator = typename std::vector<std::pair<N, std::optional<E>>>::iterator;
 
-			// 默认构造函数
+			// Default Constructor
 			iterator()
 			: node_it_()
 			, edge_it_()
 			, graph_ptr_(nullptr) {}
 
-			// 迭代器解引用操作符,返回当前的源节点, 目标节点 和 weight
+			// operator* overload
 			reference operator*() {
 				return {node_it_->first, edge_it_->first, edge_it_->second};
 			}
 
-			// 迭代器遍历
-			// 前置递增操作符
+			// Iterator traversal
+			// operator++()
 			iterator& operator++() {
-				++edge_it_; // 增加边迭代器，移动到下一条边
+				++edge_it_; // Increase the edge iterator and move to the next edge
 				if (edge_it_ == node_it_->second.end()) {
-					++node_it_; // 如果当前节点的所有边都已遍历完，增加节点迭代器，移动到下一个节点
+					// If all edges of the current node have been traversed, increase the node iterator and move to the
+					// next node
+					++node_it_;
 					while (node_it_ != graph_ptr_->adj_list_.end() and node_it_->second.empty()) {
-						++node_it_; // 跳过没有边的节点，找到下一个有边的节点
+						++node_it_; // Skip the node without edge and find the next node with edge
 					}
 					if (node_it_ != graph_ptr_->adj_list_.end()) {
-						edge_it_ = node_it_->second.begin(); // 如果还有节点没有遍历完，则初始化边迭代器
+						// If there are still nodes that have not been traversed, initialize the edge iterator
+						edge_it_ = node_it_->second.begin();
 					}
 					else {
-						edge_it_ = {}; // 确保和end()一致
+						edge_it_ = {}; // Consistent with end()
 					}
 				}
 				return *this;
 			}
 
-			// 后置递增操作符
+			// operator++(int)
 			iterator operator++(int) {
 				iterator temp = *this; // 创建当前迭代器的副本
 				++(*this); // 调用前置递增操作符
 				return temp;
 			}
 
-			// 前置递减操作符
+			// operator--()
 			iterator& operator--() {
 				if (node_it_ == graph_ptr_->adj_list_.begin() and edge_it_ == node_it_->second.begin()) {
 					throw std::out_of_range("Iterator cannot decrement past the beginning of the graph");
@@ -536,23 +550,23 @@ namespace gdwg {
 				return *this;
 			}
 
-			// 后置递减操作符
+			// operator--(int)
 			iterator operator--(int) {
 				iterator temp = *this; // 创建当前迭代器的副本
 				--(*this); // 调用前置递减操作符
 				return temp;
 			}
 
-			// 比较操作符
+			// operator==
 			bool operator==(const iterator& other) const {
 				// 比较当前迭代器与另一个迭代器是否相等
 				return node_it_ == other.node_it_ and edge_it_ == other.edge_it_ and graph_ptr_ == other.graph_ptr_;
 			}
 
 		 private:
-			node_iterator node_it_; // 当前节点的迭代器
-			edge_iterator edge_it_; // 当前边的迭代器
-			const graph* graph_ptr_; // 指向图的指针
+			node_iterator node_it_; // Iterator for the current node
+			edge_iterator edge_it_; // Iterator for the current edge
+			const graph* graph_ptr_; // Pointer to the graph
 
 			// 构造指向特定元素的迭代器函数
 			explicit iterator(node_iterator node_it, edge_iterator edge_it, const graph* graph_ptr)
