@@ -663,3 +663,46 @@ TEST_CASE("Graph find method tests", "[find]") {
 		REQUIRE_FALSE(edge.weight.has_value());
 	}
 }
+
+// 测试2.4.8 删除迭代器 [i, s) 之间的所有边
+TEST_CASE("Test erase_edge with iterator range", "[erase_edge]") {
+	gdwg::graph<int, int> g;
+	g.insert_node(1);
+	g.insert_node(2);
+	g.insert_node(3);
+	g.insert_node(4);
+	g.insert_edge(1, 2, 100);
+	g.insert_edge(2, 3, 200);
+	g.insert_edge(3, 4, 300);
+
+	SECTION("Erase a single edge") {
+		auto it1 = g.find(1, 2, 100);
+		auto it2 = g.find(2, 3, 200);
+		auto result = g.erase_edge(it1, it2); // Should erase the edge (1, 2)
+
+		REQUIRE(result == it2);
+		REQUIRE(g.is_connected(1, 2) == false);
+		REQUIRE(g.is_connected(2, 3) == true);
+	}
+
+	SECTION("Erase multiple edges") {
+		auto it1 = g.find(1, 2, 100);
+		auto it3 = g.find(3, 4, 300);
+		auto result = g.erase_edge(it1, it3); // Should erase edges (1, 2) and (2, 3)
+
+		REQUIRE(result == it3);
+		REQUIRE(g.is_connected(1, 2) == false);
+		REQUIRE(g.is_connected(2, 3) == false);
+		REQUIRE(g.is_connected(3, 4) == true);
+	}
+
+	SECTION("Erase all edges up to end") {
+		auto it1 = g.find(1, 2, 100);
+		auto result = g.erase_edge(it1, g.end()); // Erase all edges
+
+		REQUIRE(result == g.end());
+		REQUIRE(g.is_connected(1, 2) == false);
+		REQUIRE(g.is_connected(2, 3) == false);
+		REQUIRE(g.is_connected(3, 4) == false);
+	}
+}
