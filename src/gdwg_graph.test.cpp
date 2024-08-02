@@ -343,7 +343,7 @@ TEST_CASE("Graph nodes tests", "[graph]") {
 	}
 }
 
-// 测试返回src到dst所有边
+// Test return all edges from src to dst
 TEST_CASE("Graph edges function tests", "[graph]") {
 	gdwg::graph<int, double> g;
 	g.insert_node(1);
@@ -538,12 +538,12 @@ TEST_CASE("Iterator functionality for graph<int, int>", "[graph]") {
 		auto edge = *it;
 		REQUIRE(edge.from == 1);
 		REQUIRE(edge.to == 7);
-		REQUIRE(edge.weight == 4); // 检查第一条边
+		REQUIRE(edge.weight == 4); // Check the first edge
 		++it;
 		edge = *it;
 		REQUIRE(edge.from == 1);
 		REQUIRE(edge.to == 12);
-		REQUIRE(edge.weight == 3); // 检查第二条边
+		REQUIRE(edge.weight == 3); // Check the second edge
 	}
 
 	SECTION("Iterator decrement") {
@@ -552,21 +552,21 @@ TEST_CASE("Iterator functionality for graph<int, int>", "[graph]") {
 		auto edge = *it;
 		REQUIRE(edge.from == 21);
 		REQUIRE(edge.to == 31);
-		REQUIRE(edge.weight == 14); // 检查最后一条边
+		REQUIRE(edge.weight == 14); // Check the last edge
 		--it;
 		edge = *it;
 		REQUIRE(edge.from == 21);
 		REQUIRE(edge.to == 14);
-		REQUIRE(edge.weight == 23); // 检查倒数第二条边
+		REQUIRE(edge.weight == 23); // Check the second to last edge
 	}
 
 	SECTION("Comparison of iterator begin and end") {
 		auto it_begin = g.begin();
 		auto it_end = g.end();
-		REQUIRE(it_begin != it_end); // Begin 和 end 不应该相同
+		REQUIRE(it_begin != it_end); // Begin and end should not be the same
 		++it_begin;
 		--it_end;
-		REQUIRE(it_begin != it_end); // 自增后的 begin 和自减后的 end 也不应该相同
+		REQUIRE(it_begin != it_end); // The begin after increment and the end after decrement should not be the same
 	}
 
 	SECTION("Post-increment and post-decrement functionality") {
@@ -574,12 +574,12 @@ TEST_CASE("Iterator functionality for graph<int, int>", "[graph]") {
 		auto prev_it = it++;
 		REQUIRE((*prev_it).from == (*g.begin()).from);
 		REQUIRE((*prev_it).to == (*g.begin()).to);
-		REQUIRE((*prev_it).weight == (*g.begin()).weight); // 确保后置递增前后的迭代器指向相同的边
+		REQUIRE((*prev_it).weight == (*g.begin()).weight);
 
 		auto next_it = it--;
 		REQUIRE((*next_it).from == (*std::next(g.begin())).from);
 		REQUIRE((*next_it).to == (*std::next(g.begin())).to);
-		REQUIRE((*next_it).weight == (*std::next(g.begin())).weight); // 确保后置递减前后的迭代器指向相同的边
+		REQUIRE((*next_it).weight == (*std::next(g.begin())).weight);
 	}
 
 	SECTION("Equality and inequality of iterators") {
@@ -587,14 +587,14 @@ TEST_CASE("Iterator functionality for graph<int, int>", "[graph]") {
 		auto same_as_begin = g.begin();
 		auto end = g.end();
 
-		REQUIRE(begin == same_as_begin); // 测试相同位置的迭代器是否相等
-		REQUIRE(begin != end); // 测试不同位置的迭代器是否不等
+		REQUIRE(begin == same_as_begin); // Tests if iterators at the same position are equal
+		REQUIRE(begin != end); // Tests whether iterators at different positions are not equal
 		same_as_begin++;
-		REQUIRE(begin != same_as_begin); // 确认改变后不再相等
+		REQUIRE(begin != same_as_begin);
 	}
 }
 
-// 测试2.4.7 测试删除指向迭代器i的边
+// Tests for removing the edge pointing to iterator i
 TEST_CASE("Test erase_edge") {
 	gdwg::graph<int, int> g;
 	g.insert_node(1);
@@ -623,7 +623,7 @@ TEST_CASE("Test erase_edge") {
 	}
 }
 
-// 测试2.5 根据src，dst个weight找到一个特定的边
+// Test find a specific edge based on src, dst and weight
 TEST_CASE("Graph find method tests", "[find]") {
 	gdwg::graph<int, int> g;
 	g.insert_node(1);
@@ -663,7 +663,7 @@ TEST_CASE("Graph find method tests", "[find]") {
 	}
 }
 
-// 测试2.4.8 删除迭代器 [i, s) 之间的所有边
+// Tests for removing all edges between iterators [i, s)
 TEST_CASE("Test erase_edge with iterator range", "[erase_edge]") {
 	gdwg::graph<int, int> g;
 	g.insert_node(1);
