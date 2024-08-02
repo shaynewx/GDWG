@@ -29,7 +29,7 @@ TEST_CASE("Weighted Edge Test Cases", "[weighted_edge]") {
 	SECTION("Test Get Weight") {
 		REQUIRE(edge1.get_weight().has_value());
 		REQUIRE(edge1.get_weight().value() == 3.5);
-		REQUIRE(gdwg::weighted_edge<int, double>(1, 2, -3.5).get_weight().value() == -3.5); // 测试负权重
+		REQUIRE(gdwg::weighted_edge<int, double>(1, 2, -3.5).get_weight().value() == -3.5);
 	}
 
 	SECTION("Test Get Nodes") {

@@ -127,7 +127,8 @@ namespace gdwg {
 
 		// Compare two edges for equality (operator== overload)
 		bool operator==(const edge<N, E>& other) const override {
-			auto const* other_edge = dynamic_cast<const unweighted_edge<N, E>*>(&other); // 将other转为unweighted_edge
+			auto const* other_edge = dynamic_cast<const unweighted_edge<N, E>*>(&other); // Convert other to
+			                                                                             // unweighted_edge
 			if (other_edge) {
 				return this->src_ == other_edge->src_ and this->dst_ == other_edge->dst_;
 			}
@@ -569,7 +570,7 @@ namespace gdwg {
 
 			// operator==
 			bool operator==(const iterator& other) const {
-				// 比较当前迭代器与另一个迭代器是否相等
+				// Compare the current iterator with another iterator for equality
 				return node_it_ == other.node_it_ and edge_it_ == other.edge_it_ and graph_ptr_ == other.graph_ptr_;
 			}
 
