@@ -313,6 +313,15 @@ namespace gdwg {
 
 			// Insert the new edge
 			edges.push_back(new_edge);
+
+			// Sort the edges to maintain order
+			std::sort(edges.begin(), edges.end(), [](const auto& lhs, const auto& rhs) {
+				if (lhs.first == rhs.first) {
+					return lhs.second < rhs.second; // Sort by weight if dst is the same
+				}
+				return lhs.first < rhs.first; // Sort by dst
+			});
+
 			return true;
 		}
 
@@ -529,8 +538,8 @@ namespace gdwg {
 
 			// operator++(int)
 			iterator operator++(int) {
-				iterator temp = *this; // 创建当前迭代器的副本
-				++(*this); // 调用前置递增操作符
+				iterator temp = *this; // Create a copy of the current iterator
+				++(*this); // Calling the Operator++
 				return temp;
 			}
 
@@ -539,21 +548,22 @@ namespace gdwg {
 				if (node_it_ == graph_ptr_->adj_list_.begin() and edge_it_ == node_it_->second.begin()) {
 					throw std::out_of_range("Iterator cannot decrement past the beginning of the graph");
 				}
-				// 如果当前节点在图的末尾或边迭代器在节点的开始，找到前一个有边的节点
+				// If the current node is at the end of the graph or the edge iterator is at the beginning of a node,
+				// find the previous node with an edge
 				if (node_it_ == graph_ptr_->adj_list_.end() || edge_it_ == node_it_->second.begin()) {
 					do {
 						--node_it_;
 					} while (node_it_->second.empty());
-					edge_it_ = node_it_->second.end(); // 将边迭代器指向该节点的最后一条边
+					edge_it_ = node_it_->second.end(); // Point the edge iterator to the last edge of the node
 				}
-				--edge_it_; // 减少边迭代器，移动到前一条边
+				--edge_it_; // Decrement the edge iterator, moving to the previous edge
 				return *this;
 			}
 
 			// operator--(int)
 			iterator operator--(int) {
-				iterator temp = *this; // 创建当前迭代器的副本
-				--(*this); // 调用前置递减操作符
+				iterator temp = *this; // Create a copy of the current iterator
+				--(*this); // Calling the Operator--
 				return temp;
 			}
 
