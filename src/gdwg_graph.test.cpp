@@ -84,7 +84,7 @@ TEST_CASE("Unweighted Edge Test Cases", "[unweighted_edge]") {
 	}
 }
 
-// 图的constructors测试
+// Graph constructor tests
 TEST_CASE("Graph constructor tests", "[graph]") {
 	using gdwg::graph;
 
@@ -185,7 +185,7 @@ TEST_CASE("Graph constructor tests with different type of graph", "[graph]") {
 		REQUIRE(g2.is_node("Node2") == true);
 		REQUIRE(g2.is_connected("Node1", "Node2") == true);
 
-		// 原始图未被修改
+		// The original graph has not been modified
 		REQUIRE(g1.is_node("Node1") == true);
 		REQUIRE(g1.is_node("Node2") == true);
 		REQUIRE(g1.is_connected("Node1", "Node2") == true);
@@ -213,7 +213,7 @@ TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 		REQUIRE(g.insert_edge("Node1", "Node2") == true);
 		REQUIRE(g.insert_edge("Node1", "Node2", 20) == true);
 
-		// 尝试在不存在的节点间插入边
+		// Test insert an edge between non-existent nodes
 		REQUIRE_THROWS_AS(g.insert_edge("Node1", "Node3", 5), std::runtime_error);
 	}
 
@@ -226,109 +226,108 @@ TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 		REQUIRE(g.insert_edge("Node1", "Node2", 40) == true);
 	}
 
-	// 测试替换节点
+	// Test replace_node
 	SECTION("Test replace_node") {
 		g.insert_node("Node1");
 		g.insert_node("Node2");
 
 		g.insert_edge("Node1", "Node2", 10);
 
-		// 期待抛出异常，因为 "Node3" 不存在
+		// Throw an exception because node does not exist
 		REQUIRE_THROWS_AS(g.is_connected("Node1", "Node3"), std::runtime_error);
 		REQUIRE_THROWS_AS(g.is_connected("Node3", "Node2"), std::runtime_error);
 
-		// 成功替换节点
-		REQUIRE(g.replace_node("Node1", "Node3") == true); // 替换存在的节点到新节点
-		REQUIRE(g.insert_node("Node1") == true); // 替换后原节点名应可重新插入
-		REQUIRE(g.insert_node("Node3") == false); // 新节点名已存在
-		REQUIRE_THROWS_AS(g.replace_node("Node4", "Node5"), std::runtime_error); // 替换不存在的节点
-		REQUIRE(g.replace_node("Node2", "Node3") == false); // Node3 已存在，替换应失败
+		// Successfully replaced the node
+		REQUIRE(g.replace_node("Node1", "Node3") == true);
+		REQUIRE(g.insert_node("Node1") == true);
+		REQUIRE(g.insert_node("Node3") == false);
+		REQUIRE_THROWS_AS(g.replace_node("Node4", "Node5"), std::runtime_error);
+		REQUIRE(g.replace_node("Node2", "Node3") == false);
 	}
 
-	// 测试merge_replace_node
+	// Test merge_replace_node
 	SECTION("Test merge_replace_node") {
 		g.insert_node("A");
 		g.insert_node("B");
 		g.insert_node("C");
 		g.insert_edge("A", "B", 1);
 		g.insert_edge("A", "C", 2);
-		g.insert_edge("B", "B", 1); // 将成为重复边
-		g.insert_edge("A", "B"); // 无权边
-		g.insert_edge("A", "B", 5); // 加权边
+		g.insert_edge("B", "B", 1);
+		g.insert_edge("A", "B");
+		g.insert_edge("A", "B", 5);
 
-		// 检查边是否正确存在
+		// Check if the edge exists
 		REQUIRE(g.is_connected("A", "B") == true);
 		REQUIRE(g.is_connected("A", "B") == true);
 
-		// 正常合并，检查节点和边的迁移
+		// Check node and edge migration
 		REQUIRE_NOTHROW(g.merge_replace_node("A", "B"));
-		REQUIRE(g.is_node("A") == false); // A节点应该被删除
-		REQUIRE(g.is_node("B") == true); // B节点仍然存在
-		REQUIRE(g.node_count() == 2); // 总节点数为2（B, C）
+		REQUIRE(g.is_node("A") == false);
+		REQUIRE(g.is_node("B") == true);
+		REQUIRE(g.node_count() == 2);
 
-		// 检查B节点的边是否正确迁移
+		// Check whether the edges of node B are migrated correctly
 		REQUIRE(g.is_connected("B", "B") == true);
 		REQUIRE(g.is_connected("B", "C") == true);
 		REQUIRE(g.is_connected("B", "B") == true);
 		REQUIRE(g.is_connected("B", "B") == true);
 
-		// 尝试合并不存在的节点
+		// Throw an exception because nodes do not exist
 		REQUIRE_THROWS_AS(g.merge_replace_node("A", "D"), std::runtime_error);
 		REQUIRE_THROWS_AS(g.merge_replace_node("E", "B"), std::runtime_error);
 	}
 
-	// 测试删除节点
+	// Test erase_node
 	SECTION("Test erase_node") {
 		g.insert_node("NodeX");
 		g.insert_node("NodeY");
 		g.insert_edge("NodeX", "NodeY", 100);
 
-		REQUIRE(g.erase_node("NodeX") == true); // 删除存在的节点
-		REQUIRE(g.is_node("NodeX") == false); // 确认节点已删除
+		REQUIRE(g.erase_node("NodeX") == true);
+		REQUIRE(g.is_node("NodeX") == false);
 	}
 
-	// 测试删除边
+	// Test erase_edge
 	SECTION("Test erase_edge with src, dst, and weight") {
 		g.insert_node("NodeA");
 		g.insert_node("NodeB");
 		g.insert_edge("NodeA", "NodeB", 50);
 		g.insert_edge("NodeA", "NodeB");
 
-		REQUIRE(g.erase_edge("NodeA", "NodeB", 50) == true); // 删除指定权重的边
+		REQUIRE(g.erase_edge("NodeA", "NodeB", 50) == true);
 
-		REQUIRE(g.erase_edge("NodeA", "NodeB", std::nullopt) == true); // 删除无权边
+		REQUIRE(g.erase_edge("NodeA", "NodeB", std::nullopt) == true);
 		REQUIRE(g.is_connected("NodeA", "NodeB") == false);
-		// REQUIRE(g.erase_edge("NodeA", "NodeC", 100) == false); // 尝试删除不存在的边，应返回 false
 	}
 }
 
-// 检查图中是否没有节点
+// Check if there are no nodes in the graph
 TEST_CASE("Graph empty tests", "[graph]") {
 	gdwg::graph<std::string, int> g;
 
 	SECTION("Check empty on a newly created graph") {
-		REQUIRE(g.empty() == true); // 新创建的图应该是空的
+		REQUIRE(g.empty() == true);
 	}
 
 	SECTION("Check not empty after adding nodes") {
 		g.insert_node("Node1");
-		REQUIRE(g.empty() == false); // 添加节点后，图不应该是空的
+		REQUIRE(g.empty() == false);
 	}
 
 	SECTION("Check empty after removing all nodes") {
 		g.insert_node("Node1");
 		g.erase_node("Node1");
-		REQUIRE(g.empty() == true); // 删除所有节点后，图应该是空的
+		REQUIRE(g.empty() == true);
 	}
 }
 
-// 检查返回所有nodes的vector
+// Check and return the vector of all nodes
 TEST_CASE("Graph nodes tests", "[graph]") {
 	gdwg::graph<std::string, int> g;
 
 	SECTION("Test nodes on an empty graph") {
 		auto nodes = g.nodes();
-		REQUIRE(nodes.empty() == true); // 对空图调用 nodes() 应该返回空向量
+		REQUIRE(nodes.empty() == true);
 	}
 
 	SECTION("Test nodes returns all nodes in ascending order") {
@@ -349,9 +348,9 @@ TEST_CASE("Graph edges function tests", "[graph]") {
 	gdwg::graph<int, double> g;
 	g.insert_node(1);
 	g.insert_node(2);
-	g.insert_edge(1, 2, 10.0); // Weighted edge
-	g.insert_edge(1, 2); // Unweighted edge
-	g.insert_edge(1, 2, 5.0); // Another weighted edge
+	g.insert_edge(1, 2, 10.0);
+	g.insert_edge(1, 2);
+	g.insert_edge(1, 2, 5.0);
 
 	SECTION("Check sorted edges from src to dst") {
 		auto edges = g.edges(1, 2);
@@ -367,7 +366,7 @@ TEST_CASE("Graph edges function tests", "[graph]") {
 	}
 }
 
-// 测试返回所有连接到src的nodes
+// Test returns all nodes connected to src
 TEST_CASE("Test connections method") {
 	gdwg::graph<int, double> g;
 	g.insert_node(1);
@@ -393,7 +392,7 @@ TEST_CASE("Test connections method") {
 	}
 }
 
-// 图的operator==重载
+// Operator== overload of graph
 TEST_CASE("Graph equality operator tests") {
 	gdwg::graph<int, double> g1;
 	g1.insert_node(1);
@@ -406,26 +405,26 @@ TEST_CASE("Graph equality operator tests") {
 	g2.insert_edge(1, 2, 1.5);
 
 	SECTION("Graphs with identical nodes and edges") {
-		REQUIRE(g1 == g2); // 两个图相同
+		REQUIRE(g1 == g2);
 	}
 
 	SECTION("Graphs with same nodes but different edges") {
 		g2.insert_edge(2, 1, 0.5);
-		REQUIRE(!(g1 == g2)); // 两个图不相同
+		REQUIRE(!(g1 == g2));
 	}
 
 	SECTION("Graphs with different nodes") {
 		g2.insert_node(3);
-		REQUIRE(!(g1 == g2)); // 两个图不相同
+		REQUIRE(!(g1 == g2));
 	}
 
 	SECTION("Empty graphs") {
 		gdwg::graph<int, double> empty1, empty2;
-		REQUIRE(empty1 == empty2); // 两个空图相同
+		REQUIRE(empty1 == empty2);
 	}
 }
 
-// 检测是否可以格式化输出一个图的所有节点和边
+// Check if it is possible to format and output all nodes and edges of a graph
 TEST_CASE("Graph output format test", "[graph][output]") {
 	using graph = gdwg::graph<int, int>;
 	auto const v = std::vector<std::tuple<int, int, std::optional<int>>>{
@@ -489,11 +488,11 @@ TEST_CASE("Graph output format test", "[graph][output]") {
 	CHECK(out.str() == expected_output);
 }
 
-// 测试iterator
+// Test iterator
 TEST_CASE("Iterator functionality for graph<int, int>", "[graph]") {
 	gdwg::graph<int, int> g;
 
-	// 插入节点
+	// Insert node
 	g.insert_node(1);
 	g.insert_node(7);
 	g.insert_node(12);
@@ -502,7 +501,7 @@ TEST_CASE("Iterator functionality for graph<int, int>", "[graph]") {
 	g.insert_node(21);
 	g.insert_node(31);
 
-	// 插入边
+	// Insert edges
 	g.insert_edge(1, 7, 4);
 	g.insert_edge(1, 12, 3);
 	g.insert_edge(1, 21, 12);
@@ -514,7 +513,7 @@ TEST_CASE("Iterator functionality for graph<int, int>", "[graph]") {
 	g.insert_edge(21, 14, 23);
 	g.insert_edge(21, 31, 14);
 
-	// 使用迭代器遍历图
+	// Using iterators to traverse a graph
 	SECTION("Verify that all edges are correctly inserted and accessible") {
 		std::vector<std::tuple<int, int, std::optional<int>>> expected_edges = {{1, 7, 4},
 		                                                                        {1, 12, 3},
