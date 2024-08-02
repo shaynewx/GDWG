@@ -623,3 +623,43 @@ TEST_CASE("Test erase_edge") {
 		REQUIRE(last_edge == g.end());
 	}
 }
+
+// 测试2.5 根据src，dst个weight找到一个特定的边
+TEST_CASE("Graph find method tests", "[find]") {
+	gdwg::graph<int, int> g;
+	g.insert_node(1);
+	g.insert_node(2);
+	g.insert_node(3);
+	g.insert_edge(1, 2, 10);
+	g.insert_edge(2, 3, 20);
+
+	SECTION("Find existing weighted edge") {
+		auto it = g.find(1, 2, 10);
+		REQUIRE(it != g.end());
+		auto edge = *it;
+		REQUIRE(edge.from == 1);
+		REQUIRE(edge.to == 2);
+		REQUIRE(edge.weight.has_value());
+		REQUIRE(edge.weight.value() == 10);
+	}
+
+	SECTION("Find non-existing edge") {
+		auto it = g.find(1, 3);
+		REQUIRE(it == g.end());
+	}
+
+	SECTION("Find edge with incorrect weight") {
+		auto it = g.find(1, 2, 5);
+		REQUIRE(it == g.end());
+	}
+
+	SECTION("Find unweighted edge when weight is std::nullopt") {
+		g.insert_edge(3, 1);
+		auto it = g.find(3, 1, std::nullopt);
+		REQUIRE(it != g.end());
+		auto edge = *it;
+		REQUIRE(edge.from == 3);
+		REQUIRE(edge.to == 1);
+		REQUIRE_FALSE(edge.weight.has_value());
+	}
+}
