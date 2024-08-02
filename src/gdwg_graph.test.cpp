@@ -124,7 +124,7 @@ TEST_CASE("Graph constructor tests", "[graph]") {
 }
 
 // 图的构造函数测试
-TEST_CASE("Constructors", "[graph]") {
+TEST_CASE("Graph constructor tests with different type of graph", "[graph]") {
 	// 移动构造函数测试
 	SECTION("Test move constructor") {
 		gdwg::graph<std::string, int> g1;

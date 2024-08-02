@@ -23,59 +23,59 @@
 //       straight away
 namespace gdwg {
 	template<typename N, typename E>
-	class graph; // 前向声明
+	class graph;
 
 	// Edge: An Abstract BASE Class
 	template<typename N, typename E>
 	class edge {
 	 public:
-		virtual ~edge() = default; // 用于保证派生类对象可以通过基类指针安全销毁
-		[[nodiscard]] virtual std::string print_edge() const = 0; // 用于返回边的字符串表述（ ）
-		[[nodiscard]] virtual bool is_weighted() const = 0; // 返回边是否为加权边
-		virtual std::optional<E> get_weight() const = 0; // 返回权重（无权边返回std::nullopt）
-		virtual std::pair<N, N> get_nodes() const = 0; // 返回边的源节点和目标节点
+		// Pure virtual function
+		virtual ~edge() = default;
+		[[nodiscard]] virtual std::string print_edge() const = 0;
+		[[nodiscard]] virtual bool is_weighted() const = 0;
+		virtual std::optional<E> get_weight() const = 0;
+		virtual std::pair<N, N> get_nodes() const = 0;
 		virtual bool operator==(const edge& other) const = 0;
 
 	 private:
-		friend class graph<N, E>; // 声明模板友元
+		friend class graph<N, E>;
 	};
 
-	// 加权Edge
+	// Class of weighted edges
 	template<typename N, typename E>
 	class weighted_edge : public edge<N, E> {
 	 public:
-		// 加权边的构造函数
+		// Constructor for weighted edges
 		weighted_edge(const N& src, const N& dst, const E& weight)
 		: src_(src)
 		, dst_(dst)
 		, weight_(weight) {}
 
-		// 实现纯虚函数
-		// 返回边的字符串表述
+		// Return a string representation of the edge
 		[[nodiscard]] std::string print_edge() const override {
 			std::ostringstream oss; // 定义输出字符流
 			oss << src_ << " -> " << dst_ << " | W | " << weight_;
 			return oss.str();
 		}
 
-		// 返回边是否为加权边（是）
+		// Return whether the edge is a weighted edge (true)
 		[[nodiscard]] bool is_weighted() const override {
 			return true;
 		}
 
-		// 返回权重
+		// Return weight
 		std::optional<E> get_weight() const override {
 			return weight_;
 		}
 
-		// 返回边的源节点和目标节点
+		// Returns the src and dst nodes of an edge
 		std::pair<N, N> get_nodes() const override {
 			return {src_, dst_};
 		}
 
-		// 比较两条边是否相等 operator==重载
+		// Compare two edges for equality (operator== overload)
 		bool operator==(const edge<N, E>& other) const override {
-			auto const* other_edge = dynamic_cast<const weighted_edge<N, E>*>(&other); // 将other转为weighted_edge
+			auto const* other_edge = dynamic_cast<const weighted_edge<N, E>*>(&other); // Convert other to weighted_edge
 			if (other_edge) {
 				return this->src_ == other_edge->src_ and this->dst_ == other_edge->dst_
 				       and this->weight_ == other_edge->weight_;
@@ -83,7 +83,7 @@ namespace gdwg {
 			return false;
 		}
 
-		// operator!=重载
+		// operator!= overload
 		bool operator!=(const edge<N, E>& other) const {
 			return !(*this == other);
 		}
@@ -94,39 +94,38 @@ namespace gdwg {
 		E weight_;
 	};
 
-	// 无权Edge
+	// Class of Unweighted edge
 	template<typename N, typename E>
 	class unweighted_edge : public edge<N, E> {
 	 public:
-		// 无权边的构造函数
+		// Constructor for unweighted edges
 		unweighted_edge(const N& src, const N& dst)
 		: src_(src)
 		, dst_(dst) {}
 
-		// 实现纯虚函数
-		// 返回边的字符串表述
+		// Return a string representation of the edge
 		std::string print_edge() const override {
 			std::ostringstream oss;
 			oss << src_ << " -> " << dst_ << " | U";
 			return oss.str();
 		}
 
-		// 返回边是否为加权边（否）
+		// Return whether the edge is a weighted edge (false)
 		bool is_weighted() const override {
 			return false;
 		}
 
-		// 返回权重
+		// Return weight (nullopt)
 		std::optional<E> get_weight() const override {
 			return std::nullopt;
 		}
 
-		// 返回边的源节点和目标节点
+		// Returns the src and dst nodes of an edge
 		std::pair<N, N> get_nodes() const override {
 			return {src_, dst_};
 		}
 
-		// 比较两个边是否相等
+		// Compare two edges for equality (operator== overload)
 		bool operator==(const edge<N, E>& other) const override {
 			auto const* other_edge = dynamic_cast<const unweighted_edge<N, E>*>(&other); // 将other转为unweighted_edge
 			if (other_edge) {
@@ -135,7 +134,7 @@ namespace gdwg {
 			return false;
 		}
 
-		// operator!=重载
+		// operator!= overload
 		bool operator!=(const edge<N, E>& other) const {
 			return !(*this == other);
 		}
@@ -145,28 +144,28 @@ namespace gdwg {
 		N dst_;
 	};
 
-	// 图
+	// Class of Graph
 	template<typename N, typename E>
 	class graph {
 	 public:
-		// 默认构造函数，noexcept防止异常抛出
+		// Default constructor with noexcept
 		graph() noexcept
 		: adj_list_{}
 		, nodes_{} {}
 
-		// 初始化列表构造函数，接受一个初始化列表作为参数
+		// Initializer list constructor, accepts an initializer list as a parameter
 		graph(std::initializer_list<N> il) {
-			// 清空当前对象的状态
+			// Clear the state of the current object
 			adj_list_.clear();
 			nodes_.clear();
 
-			// 插入初始化列表中的元素
+			// Inserting elements into the initializer list
 			for (auto const& node : il) {
 				nodes_.emplace(node);
 			}
 		}
 
-		// 范围构造函数
+		// Range Constructor
 		template<typename InputIt>
 		graph(InputIt first, InputIt last) {
 			for (auto it = first; it != last; ++it) {
@@ -174,46 +173,46 @@ namespace gdwg {
 			}
 		}
 
-		// 移动构造函数
+		// Move Constructor
 		graph(graph&& other) noexcept = default;
 
-		// 移动赋值运算符
+		// Move assignment operator
 		graph& operator=(graph&& other) noexcept = default;
 
-		// 复制构造函数
+		// Copy Constructor
 		graph(graph const& other) = default;
 
-		// 复制赋值运算符
+		// Copy assignment operator
 		graph& operator=(graph const& other) = default;
 
 		// 2.5 Accessors
-		// 检查一个特定的节点是否存在于图中
+		// Check if a specific node exists in the graph
 		[[nodiscard]] bool is_node(const N& node) const {
 			return nodes_.find(node) != nodes_.end();
 		}
 
-		// 检查图中是否有节点（没有则返回true）
+		// Check if the node exists in the graph (returns true if not)
 		[[nodiscard]] bool empty() const {
 			return nodes_.empty();
 		}
 
-		// 检查两个节点之间是否有特定权重的边
+		// Check if there is an edge of a certain weight between two nodes
 		[[nodiscard]] bool is_connected(N const& src, N const& dst) const {
-			// 检查 src 和 dst 节点是否存在，如果不存在，抛出异常
+			// Check if the src and dst nodes exist, if not, throw an exception
 			if (!is_node(src) || !is_node(dst)) {
 				throw std::runtime_error("Cannot call gdwg::graph<N, E>::is_connected if src or dst node don't exist "
 				                         "in the graph");
 			}
 
-			// 获取源节点的边列表
-			const auto& edges = adj_list_.find(src)->second;
-			// 检查是否存在到目标节点的边
+			const auto& edges = adj_list_.find(src)->second; // Get the edge list of the source node
+
+			// Check if there is an edge to the target node
 			for (const auto& edge : edges) {
 				if (edge.first == dst) {
-					return true; // 找到匹配的边
+					return true; // Return true if a matching edge is found
 				}
 			}
-			return false; // 未找到匹配的边
+			return false;
 		}
 
 		// 返回图中节点的数量
