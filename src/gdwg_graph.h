@@ -578,40 +578,38 @@ namespace gdwg {
 			edge_iterator edge_it_; // Iterator for the current edge
 			const graph* graph_ptr_; // Pointer to the graph
 
-			// 构造指向特定元素的迭代器函数
+			// Construct an iterator function pointing to a specific element
 			explicit iterator(node_iterator node_it, edge_iterator edge_it, const graph* graph_ptr)
 			: node_it_(node_it)
 			, edge_it_(edge_it)
 			, graph_ptr_(graph_ptr) {}
 
-			// 友元声明，以便 graph 类可以访问 iterator 类的私有成员
 			friend class graph;
 		};
 
-		// 2.6 Iterator Access 迭代器访问
-		// 返回指向容器中第一个元素的迭代器
+		// 2.6 Iterator Access
+		// Return the iterator pointing to the first element in the container
 		[[nodiscard]] iterator begin() const {
 			if (adj_list_.empty()) {
-				return end(); // 如果容器为空，begin 应该等同于 end
+				return end();
 			}
-			// 强制转换去除常量性
+			// Cast to remove constness
 			auto node_it = const_cast<std::map<N, std::vector<std::pair<N, std::optional<E>>>>&>(adj_list_).begin();
 			return iterator(node_it, node_it->second.begin(), const_cast<graph*>(this));
 		}
 
-		// 返回指向列表末尾的迭代器
+		// Return the iterator pointing to the end of the list
 		[[nodiscard]] iterator end() const {
-			// 创建一个表示结束的迭代器，它的节点迭代器指向邻接列表的末尾
-			static std::vector<std::pair<N, std::optional<E>>> empty_edge_list; // 用于安全返回 end 迭代器
-			// 强制转换去除常量性
+			static std::vector<std::pair<N, std::optional<E>>> empty_edge_list;
+			// Cast to remove constness
 			auto node_it = const_cast<std::map<N, std::vector<std::pair<N, std::optional<E>>>>&>(adj_list_).end();
 			return iterator(node_it, empty_edge_list.end(), const_cast<graph*>(this));
 		}
 
-		// 2.4.7 删除指向迭代器i的边
+		// 2.4.7 Remove the edge pointing to iterator i
 		iterator erase_edge(iterator i) {
 			if (i == end()) {
-				return end(); // 如果迭代器已经是end，则直接返回
+				return end();
 			}
 
 			auto node_it = i.node_it_;
@@ -621,30 +619,30 @@ namespace gdwg {
 				return end();
 			}
 
-			// 删除当前边并计算下一个元素的位置
+			// Delete the current edge and calculate the position of the next element
 			node_it->second.erase(edge_it);
 			if (node_it->second.empty()) {
-				// 如果当前节点没有更多边，移动到下一个有边的节点
+				// If the current node has no more edges, move to the next node with edges
 				do {
 					++node_it;
 					if (node_it == adj_list_.end())
-						return end(); // 如果没有更多节点，返回end
+						return end(); // Return end if there are no more nodes
 				} while (node_it->second.empty());
 				return iterator(node_it, node_it->second.begin(), this);
 			}
 			else {
-				// 否则，返回当前节点的下一条边
+				// Otherwise return the next edge of the current node
 				if (edge_it != node_it->second.end()) {
 					return iterator(node_it, edge_it, this);
 				}
 				else {
-					// 如果是最后一条边被删除，返回下一个节点的第一条边
+					// If the last edge is deleted, return the first edge of the next node
 					return iterator(++node_it, node_it->second.begin(), this);
 				}
 			}
 		}
 
-		// 2.4.8 删除迭代器 [i, s) 之间的所有边
+		// 2.4.8 Removes all edges between iterators [i, s)
 		iterator erase_edge(iterator i, iterator s) {
 			while (i != s) {
 				auto current = i++;
@@ -653,25 +651,25 @@ namespace gdwg {
 			return s;
 		}
 
-		// 2.5 返回 指向与指定 src、dst 和权重等价的边的迭代器
+		// 2.5 Return an iterator pointing to edges equivalent to the specified src, dst, and weight
 		[[nodiscard]] iterator find(N const& src, N const& dst, std::optional<E> weight = std::nullopt) {
 			auto src_it = adj_list_.find(src);
 			if (src_it == adj_list_.end()) {
-				return end(); // 如果不存在源节点也就不存在边，返回end()
+				return end(); // If there is no src, there is no edge, and return end()
 			}
 
 			auto& edges = src_it->second;
 			for (auto it = edges.begin(); it != edges.end(); ++it) {
 				if (it->first == dst and it->second == weight) {
-					return iterator(src_it, it, this); // 返回找到匹配的边
+					return iterator(src_it, it, this); // Return the edges that found the match
 				}
 			}
-			return end(); // 未找到匹配的边，返回 end()
+			return end();
 		}
 
 	 private:
-		std::map<N, std::vector<std::pair<N, std::optional<E>>>> adj_list_; // 节点和边的邻接表
-		std::set<N> nodes_; // 节点的集合
+		std::map<N, std::vector<std::pair<N, std::optional<E>>>> adj_list_; // Adjacency lists for nodes and edges
+		std::set<N> nodes_; // Set of nodes
 	};
 } // namespace gdwg
 

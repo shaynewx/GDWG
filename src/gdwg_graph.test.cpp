@@ -7,19 +7,19 @@ TEST_CASE("basic test") {
 	//  because withour your implementation
 	//  it will not compile. Uncomment them
 	//  once you've done the work
-	/*auto g = gdwg::graph<int, std::string>{};
+	auto g = gdwg::graph<int, std::string>{};
 	auto n = 5;
 	g.insert_node(n);
-	CHECK(g.is_node(n));*/
+	CHECK(g.is_node(n));
 }
 
-// 有权边测试
+// Weighted Edge Test Case
 TEST_CASE("Weighted Edge Test Cases", "[weighted_edge]") {
 	gdwg::weighted_edge<int, double> edge1(1, 2, 3.5);
 
 	SECTION("Test Print Edge") {
 		REQUIRE(edge1.print_edge() == "1 -> 2 | W | 3.5");
-		REQUIRE(gdwg::weighted_edge<int, double>(1, 2, 3.501).print_edge() == "1 -> 2 | W | 3.501"); // 测试精度
+		REQUIRE(gdwg::weighted_edge<int, double>(1, 2, 3.501).print_edge() == "1 -> 2 | W | 3.501");
 	}
 
 	SECTION("Test Is Weighted") {
@@ -41,19 +41,19 @@ TEST_CASE("Weighted Edge Test Cases", "[weighted_edge]") {
 	SECTION("Test Equality Operator") {
 		gdwg::weighted_edge<int, double> edge2(1, 2, 3.5);
 		gdwg::weighted_edge<int, double> edge3(1, 3, 3.5);
-		gdwg::weighted_edge<int, double> edge4(1, 2, 3.6); // 不同权重
-		gdwg::weighted_edge<int, double> edge5(2, 1, 3.5); // 反向边
+		gdwg::weighted_edge<int, double> edge4(1, 2, 3.6);
+		gdwg::weighted_edge<int, double> edge5(2, 1, 3.5);
 		REQUIRE(edge1 == edge2);
 		REQUIRE_FALSE(edge1 == edge3);
-		REQUIRE_FALSE(edge1 == edge4); // 确认权重差异导致不等
-		REQUIRE_FALSE(edge1 == edge5); // 确认方向性导致不等
+		REQUIRE_FALSE(edge1 == edge4); // Confirm that weight differences lead to inequality
+		REQUIRE_FALSE(edge1 == edge5); // Confirming directionality leads to inequality
 		REQUIRE(edge1 != edge3);
 		REQUIRE(edge1 != edge4);
 		REQUIRE(edge1 != edge5);
 	}
 }
 
-// 无权边测试
+// Unweighted Edge Test Cases
 TEST_CASE("Unweighted Edge Test Cases", "[unweighted_edge]") {
 	gdwg::unweighted_edge<int, double> edge1(1, 2);
 
@@ -123,23 +123,23 @@ TEST_CASE("Graph constructor tests", "[graph]") {
 	}
 }
 
-// 图的构造函数测试
+// Graph constructor test cases
 TEST_CASE("Graph constructor tests with different type of graph", "[graph]") {
-	// 移动构造函数测试
+	// move constructor
 	SECTION("Test move constructor") {
 		gdwg::graph<std::string, int> g1;
 		g1.insert_node("Node1");
 		g1.insert_node("Node2");
 		g1.insert_edge("Node1", "Node2", 10);
 
-		gdwg::graph<std::string, int> g2(std::move(g1)); // 移动构造函数
+		gdwg::graph<std::string, int> g2(std::move(g1));
 		REQUIRE(g2.is_node("Node1") == true);
 		REQUIRE(g2.is_node("Node2") == true);
 		REQUIRE(g2.is_connected("Node1", "Node2") == true);
-		REQUIRE(g1.empty() == true); // g1 已被清空
+		REQUIRE(g1.empty() == true); // g1 has been cleared
 	}
 
-	// 移动赋值运算符测试
+	// move assignment operator
 	SECTION("Test move assignment operator") {
 		gdwg::graph<std::string, int> g1;
 		g1.insert_node("Node1");
@@ -147,32 +147,32 @@ TEST_CASE("Graph constructor tests with different type of graph", "[graph]") {
 		g1.insert_edge("Node1", "Node2", 10);
 
 		gdwg::graph<std::string, int> g2;
-		g2 = std::move(g1); // 移动赋值运算符
+		g2 = std::move(g1);
 		REQUIRE(g2.is_node("Node1") == true);
 		REQUIRE(g2.is_node("Node2") == true);
 		REQUIRE(g2.is_connected("Node1", "Node2") == true);
-		REQUIRE(g1.empty() == true); // g1 已被清空
+		REQUIRE(g1.empty() == true); // g1 has been cleared
 	}
 
-	// 复制构造函数
+	// copy constructor
 	SECTION("Test copy constructor") {
 		gdwg::graph<std::string, int> g1;
 		g1.insert_node("Node1");
 		g1.insert_node("Node2");
 		g1.insert_edge("Node1", "Node2", 10);
 
-		gdwg::graph<std::string, int> g2(g1); // 复制构造函数
+		gdwg::graph<std::string, int> g2(g1);
 		REQUIRE(g2.is_node("Node1") == true);
 		REQUIRE(g2.is_node("Node2") == true);
 		REQUIRE(g2.is_connected("Node1", "Node2") == true);
 
-		// 原始图未被修改
+		// The original graph has not been modified
 		REQUIRE(g1.is_node("Node1") == true);
 		REQUIRE(g1.is_node("Node2") == true);
 		REQUIRE(g1.is_connected("Node1", "Node2") == true);
 	}
 
-	// 复制赋值运算符测试
+	// copy assignment operator
 	SECTION("Test copy assignment operator") {
 		gdwg::graph<std::string, int> g1;
 		g1.insert_node("Node1");
@@ -180,7 +180,7 @@ TEST_CASE("Graph constructor tests with different type of graph", "[graph]") {
 		g1.insert_edge("Node1", "Node2", 10);
 
 		gdwg::graph<std::string, int> g2;
-		g2 = g1; // 复制赋值运算符
+		g2 = g1;
 		REQUIRE(g2.is_node("Node1") == true);
 		REQUIRE(g2.is_node("Node2") == true);
 		REQUIRE(g2.is_connected("Node1", "Node2") == true);
@@ -192,18 +192,18 @@ TEST_CASE("Graph constructor tests with different type of graph", "[graph]") {
 	}
 }
 
-// 图的成员函数测试
+// Test cases for member functions of graph
 TEST_CASE("Graph Tests for graph<std::string, int>", "[graph]") {
 	gdwg::graph<std::string, int> g;
 
-	// 测试插入节点
+	// Test insert_node
 	SECTION("Test insert_node with string identifiers") {
 		REQUIRE(g.insert_node("Node1") == true);
 		REQUIRE(g.insert_node("Node1") == false);
 		REQUIRE(g.insert_node("Node2") == true);
 	}
 
-	// 测试插入边
+	// Test insert_edge
 	SECTION("Test insert_edge with string nodes and int weights") {
 		g.insert_node("Node1");
 		g.insert_node("Node2");
