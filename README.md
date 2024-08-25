@@ -33,6 +33,7 @@ The GDWG library is designed to handle complex graph structures with generic nod
     git clone git@github.com:shaynewx/GDWG.git
     ```
 2. Include the library files from the `src` directory in your project:
+   ```
     - `gdwg_graph.h`
     - `gdwg_graph.cpp`
     - `client.cpp`
