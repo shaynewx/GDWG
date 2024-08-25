@@ -54,7 +54,7 @@ Navigate to your project directory and compile the `client.cpp` using a C++ comp
     cd build
     make
     ```
-3. Run the tests:
+3. Run the client:
     ```sh
     ./clent
     ```
