@@ -45,12 +45,36 @@ To demonstrate the capabilities of the GDWG library, you can compile and run the
 ### Compiling and Running the Client Example
 Navigate to your project directory and compile the `client.cpp` using a C++ compiler that supports C++17 or later. Here is an example using `g++`:
 
-```sh
-g++ -std=c++17 -o client src/client.cpp
-./client
-```
+1. Configure your project with CMake in the root directory:
+    ```sh
+    cmake -B build
+    ```
+2. Build the project:
+    ```sh
+    cd build
+    make
+    ```
+3. Run the tests:
+    ```sh
+    ./clent
+    ```
 
 ## Testing
+Unit tests are provided in `src/filtered_string_view.test.cpp` to ensure the correctness and efficiency of the library. To run the tests:
+
+1. Configure your project with CMake in the root directory:
+    ```sh
+    cmake -B build
+    ```
+2. Build the project:
+    ```sh
+    cd build
+    make
+    ```
+3. Run the tests:
+    ```sh
+    ./gdwg_graph_test_exe
+    ```
 
 ## Contribution
 
